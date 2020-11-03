@@ -1,25 +1,21 @@
 import express from 'express';
-import userSchema from '../../models/User';
+import UserSchema from '../../models/User';
+import {logger} from '../../helpers/logger';
+// eslint-disable-next-line new-cap
 const router = express.Router();
 
-
-
-router.get('/test', (req,res) => {
-    res.send('api is working');
-});
-
 router.post('/register', (req, res)=> {
-    const newUser = new userSchema({
+    const newUser = new UserSchema({
         name: req.body.name,
         email: req.body.email,
-        password: req.body.password
+        password: req.body.password,
     });
     newUser.save()
         .then((user) => {
             res.send(user);
         }).catch((err) => {
-            console.log(err);
-        })
+            logger.error(err);
+        });
 });
 
 router.post('/login', (req, res) => {
@@ -27,13 +23,13 @@ router.post('/login', (req, res) => {
     const password = req.body.password;
     userSchema.findOne({email})
         .then((user) => {
-            if(!user){
+            if (!user) {
                 return res.send('no email found');
             }
-            if(password === user.password){
+            if (password === user.password) {
                 res.send(JSON.stringify(user));
             }
-        })
+        });
 });
 
 export default router;
