@@ -20,5 +20,5 @@ const UserSchema = new Schema({
     default: Date.now
   }
 });
-
+console.log("testing");
 export default mongoose.model('users', UserSchema);
