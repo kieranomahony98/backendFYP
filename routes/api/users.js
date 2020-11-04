@@ -21,7 +21,7 @@ router.post('/register', (req, res)=> {
 router.post('/login', (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
-    userSchema.findOne({email})
+    UserSchema.findOne({email: email})
         .then((user) => {
             if (!user) {
                 return res.send('no email found');
@@ -31,5 +31,28 @@ router.post('/login', (req, res) => {
             }
         });
 });
+
+router.post('/update', (req, res) => {
+    // eslint-disable-next-line max-len
+    UserSchema.updateOne({email: req.body.email}, {$set: {password: req.body.password}})
+        .then((user) => {
+            res.send(`User updated: ${user}`);
+        }).catch((err) => {
+            logger.error(err);
+            throw new Error();
+        });
+});
+
+router.get('/delete/:id', (req, res) => {
+    UserSchema.deleteOne({email: req.params.id})
+        .then((r) => {
+            // eslint-disable-next-line max-len
+            res.send(`${req.params.id} successfully deleted: ${JSON.stringify(r)}`);
+        }).catch((err) => {
+            logger.error(err);
+            throw new Error();
+        });
+});
+
 
 export default router;

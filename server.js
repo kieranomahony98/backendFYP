@@ -1,6 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import apiRoutes from './routes/api/users';
+import apiUserRoutes from './routes/api/users';
+import apiMovieRoutes from './routes/api/movies';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import {logger} from './helpers/logger';
@@ -25,7 +26,8 @@ mongoose.connect(db, {useNewUrlParser: true, useUnifiedTopology: true})
         logger.error(err);
     });
 
-app.use('/api/users', apiRoutes);
+app.use('/api/users', apiUserRoutes);
+app.use('/api/movies', apiMovieRoutes);
 app.get('/', (req, res) => {
     res.send('Welcome to babel node');
 });
