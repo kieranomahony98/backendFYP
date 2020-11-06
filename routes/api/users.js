@@ -1,9 +1,13 @@
 import express from 'express';
 import UserSchema from '../../models/User';
 import {logger} from '../../helpers/logger';
+
 // eslint-disable-next-line new-cap
 const router = express.Router();
 
+/** @Route Post /api/users/register
+ *  @Desc provides api to register user
+*/
 router.post('/register', (req, res)=> {
     const newUser = new UserSchema({
         name: req.body.name,
@@ -18,9 +22,12 @@ router.post('/register', (req, res)=> {
         });
 });
 
+/** @Route Post /api/users/login
+ *  @Desc provides api for user to login
+*/
 router.post('/login', (req, res) => {
-    const email = req.body.email;
-    const password = req.body.password;
+    const {email, password} = req.body;
+
     UserSchema.findOne({email: email})
         .then((user) => {
             if (!user) {
@@ -32,19 +39,25 @@ router.post('/login', (req, res) => {
         });
 });
 
+/** @Route Post /api/users/update
+ *  @Desc provides api for user to update their profile
+*/
 router.post('/update', (req, res) => {
     // eslint-disable-next-line max-len
     UserSchema.updateOne({email: req.body.email}, {$set: {password: req.body.password}})
         .then((user) => {
-            res.send(`User updated: ${user}`);
+            res.send(`User Updated: ${req.body.email}`);
         }).catch((err) => {
             logger.error(err);
             throw new Error();
         });
 });
 
-router.get('/delete/:id', (req, res) => {
-    UserSchema.deleteOne({email: req.params.id})
+/** @Route Post /api/users/delete
+ *  @Desc provides api for user to delete their profile
+*/
+router.post('/delete', (req, res) => {
+    UserSchema.deleteOne({email: req.body.email})
         .then((r) => {
             // eslint-disable-next-line max-len
             res.send(`${req.params.id} successfully deleted: ${JSON.stringify(r)}`);
