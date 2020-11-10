@@ -6,15 +6,12 @@ const moviedb = new MovieDb(dotenv.config().parsed.TMDB3);
 
 /**
  * @Desc function returns list of movies from api
+ * @param {object} movieSearchCriteria object of the user input
  */
-async function getMovies() {
-    return await moviedb.discoverMovie({
-        sort_by: 'popularity.desc',
-        with_genres: '28,53',
-        primary_release_year: 2015,
-    }).then((movies) => {
+async function getMovies(movieSearchCriteria) {
+    return await moviedb.discoverMovie(movieSearchCriteria).then((movies) => {
         return movies.results;
-    }).catch((err) =>{
+    }).catch((err) => {
         logger.error(`${err} in getting Movies`);
         throw new Error();
     });
@@ -23,8 +20,9 @@ async function getMovies() {
 /**
  * desc: function filters the movies
  * @param {Object} allMovies JSON from api with list of movies
+ * @param {object} movieSearchCriteria object of the user input
  */
-async function filterMovies(allMovies) {
+async function filterMovies(allMovies, movieSearchCriteria) {
     let filteredMoves = [];
     try {
         filteredMoves = allMovies.filter((movie, index) => {
@@ -34,14 +32,14 @@ async function filterMovies(allMovies) {
         logger.error(`Error in filtering movies ${err}`);
     }
 
-    const movieReturnObj ={
+    const movieReturnObj = {
         movieGenerationDate: new Date().toISOString(),
+        movieSearchCriteria: movieSearchCriteria,
         movies: [],
     };
 
     try {
         for (const movie of filteredMoves) {
-            console.log(movie);
             const newMovieObj = returnMovieGenerationObject();
             newMovieObj.movieId = movie.id;
             newMovieObj.movieTitle = movie.title;
@@ -76,10 +74,15 @@ function returnMovieGenerationObject() {
  * @Desc returns fotmatted movies to the api
  */
 export async function returnMovies() {
-    return getMovies()
-        .then((movies) => filterMovies(movies))
+    const movieSearchCriteria = {
+        sort_by: 'popularity.desc',
+        with_genres: '28,53',
+        primary_release_year: 2015,
+    };
+
+    return getMovies(movieSearchCriteria)
+        .then((movies) => filterMovies(movies, movieSearchCriteria))
         .then((filteredMovies) => {
-            console.log(filteredMovies);
             return filteredMovies;
         }).catch((err) => {
             logger.error(`Failed to return movies ${err}`);

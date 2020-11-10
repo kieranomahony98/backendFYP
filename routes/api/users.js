@@ -1,5 +1,5 @@
 import express from 'express';
-import UserSchema from '../../models/User';
+import UserSchema from '../../models/userModel';
 import {logger} from '../../helpers/logger';
 
 // eslint-disable-next-line new-cap

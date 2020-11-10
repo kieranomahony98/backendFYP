@@ -1,8 +1,8 @@
-import MovieSchema from '../models/movie';
+import MovieSchema from '../models/movieModel';
 import {logger} from '../helpers/logger';
 /**
  * @Desc writes users to movies to database
- * @param {MovieObject }movieGeneration generated movies to write to databaes
+ * @param {MovieObject} movieGeneration generated movies to write to databaes
  * @param {String} userId the id of the user in question
  */
 export async function writeToDatabase(movieGeneration, userId) {
@@ -21,6 +21,7 @@ export async function writeToDatabase(movieGeneration, userId) {
                 logger.info(`${written} has been added to database`);
             });
     } else {
+        console.log(movieGeneration.movieSearchCriteria);
         const newuserMovies = new MovieSchema({
             userId: userId,
             userMovies: movieGeneration,
@@ -40,10 +41,15 @@ export async function writeToDatabase(movieGeneration, userId) {
  * @param {String} userId
  */
 export async function getMoviesFromDatabase(userId) {
-    return await MovieSchema.findOne({userId: userId})
+    const userMovies = await MovieSchema.findOne({userId: userId})
         .then((movieGens) => {
             return movieGens.userMovies;
         });
+    if (userMovies) {
+        return userMovies;
+    } else {
+        return `Unable to find user movies for ${userId}`;
+    }
 }
 
 

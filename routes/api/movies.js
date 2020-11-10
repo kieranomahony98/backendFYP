@@ -13,10 +13,10 @@ const router = express.Router();
 
 router.get('/testingMovies', (req, res) => {
     returnMovies()
-        .then((formattedMoivies) => {
-            writeToDatabase(formattedMoivies, 'kieran@123.ie')
-                .then((movieWritten) =>{
-                    res.send(JSON.stringify(formattedMoivies));
+        .then((formattedMovies) => {
+            writeToDatabase(formattedMovies, 'kieran@123.ie')
+                .then((movieWritten) => {
+                    res.send(JSON.stringify(formattedMovies));
                 });
         }).catch((err) => {
             logger.error(`${err} error in api`);
@@ -25,7 +25,7 @@ router.get('/testingMovies', (req, res) => {
 
 router.get('/returnMovies', (req, res) => {
     getMoviesFromDatabase('kieran@123.ie')
-        .then((userMovieGenerations) =>{
+        .then((userMovieGenerations) => {
             res.send(userMovieGenerations);
         }).catch((err) => {
             logger.error(err);

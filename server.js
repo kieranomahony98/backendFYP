@@ -5,10 +5,14 @@ import apiMovieRoutes from './routes/api/movies';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import {logger} from './helpers/logger';
+import cors from 'cors';
+import helmet from 'helmet';
 
 const app = express();
 const env = dotenv.config().parsed;
 
+app.use(cors());
+app.use(helmet());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
