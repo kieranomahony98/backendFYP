@@ -3,25 +3,25 @@ import bodyParser from 'body-parser';
 import apiUserRoutes from './routes/api/users';
 import apiMovieRoutes from './routes/api/movies';
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
 import {logger} from './helpers/logger';
 import cors from 'cors';
 import helmet from 'helmet';
+import endpoints from './endpoints.config';
 
 const app = express();
-const env = dotenv.config().parsed;
+
 
 app.use(cors());
 app.use(helmet());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
-app.listen(env.PORT, () => {
-    logger.info(`app is listening to port ${env.PORT}`);
+app.listen(endpoints.PORT, () => {
+    logger.info(`app is listening to port ${endpoints.PORT}`);
 });
 
 // config mongodb
-const db = env.MONGO_URI;
+const db = endpoints.MONGO_URI;
 // connect to db
 mongoose.connect(db, {useNewUrlParser: true, useUnifiedTopology: true})
     .then(() => {

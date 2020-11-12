@@ -1,11 +1,12 @@
 import MovieSchema from '../models/movieModel';
 import {logger} from '../helpers/logger';
+import {movieGenerationModel, singleGenerationObject} from '../tsModels/movieGernerationModel'
 /**
  * @Desc writes users to movies to database
  * @param {MovieObject} movieGeneration generated movies to write to databaes
  * @param {String} userId the id of the user in question
  */
-export async function writeToDatabase(movieGeneration, userId) {
+export async function writeToDatabase(movieGeneration: singleGenerationObject, userId: string) {
     const user = await MovieSchema.findOne({userId: userId})
         .then((user) => user)
         .catch((err) => {
@@ -21,7 +22,6 @@ export async function writeToDatabase(movieGeneration, userId) {
                 logger.info(`${written} has been added to database`);
             });
     } else {
-        console.log(movieGeneration.movieSearchCriteria);
         const newuserMovies = new MovieSchema({
             userId: userId,
             userMovies: movieGeneration,
@@ -40,11 +40,9 @@ export async function writeToDatabase(movieGeneration, userId) {
  * get movie curation for a user
  * @param {String} userId
  */
-export async function getMoviesFromDatabase(userId) {
-    const userMovies = await MovieSchema.findOne({userId: userId})
-        .then((movieGens) => {
-            return movieGens.userMovies;
-        });
+export async function getMoviesFromDatabase(userId: string) {
+    const userMovies: movieGenerationModel | null = await MovieSchema.findOne({userId: userId})
+       
     if (userMovies) {
         return userMovies;
     } else {

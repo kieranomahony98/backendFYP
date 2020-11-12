@@ -1,4 +1,6 @@
 import mongoose from 'mongoose';
+import { movieGenerationModel } from '../tsModels/movieGernerationModel';
+
 const Schema = mongoose.Schema;
 
 const MovieSchema = new Schema({
@@ -6,7 +8,7 @@ const MovieSchema = new Schema({
     userMovies: [
         {
             movieGenerationDate: {
-                type: Date,
+                type: String,
                 required: true,
             },
             movieSearchCriteria: {
@@ -58,4 +60,4 @@ const MovieSchema = new Schema({
 });
 
 
-export default mongoose.model('movies', MovieSchema);
+export default mongoose.model<movieGenerationModel>('movies', MovieSchema);

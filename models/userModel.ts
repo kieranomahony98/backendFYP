@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import {userModel} from '../tsModels/userModel';
 const Schema = mongoose.Schema;
 
 // Create Schema
@@ -21,4 +22,4 @@ const UserSchema = new Schema({
     },
 });
 
-export default mongoose.model('users', UserSchema);
+export default mongoose.model<userModel>('users', UserSchema);

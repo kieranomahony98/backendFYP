@@ -1,14 +1,17 @@
+/* eslint-disable */
 import {MovieDb} from 'moviedb-promise';
 import dotenv from 'dotenv';
 import {logger} from '../helpers/logger';
+import endpointsConfig from '../endpoints.config';
+import {movieObject, movieSearchCriteriaModel, singleGenerationObject, MovieResult} from '../tsModels/movieGernerationModel';
 
-const moviedb = new MovieDb(dotenv.config().parsed.TMDB3);
-
+const moviedb = new MovieDb(endpointsConfig.TMDB3);
+ 
 /**
  * @Desc function returns list of movies from api
  * @param {object} movieSearchCriteria object of the user input
  */
-async function getMovies(movieSearchCriteria) {
+async function getMovies(movieSearchCriteria: movieSearchCriteriaModel) {
     return await moviedb.discoverMovie(movieSearchCriteria).then((movies) => {
         return movies.results;
     }).catch((err) => {
@@ -20,19 +23,20 @@ async function getMovies(movieSearchCriteria) {
 /**
  * desc: function filters the movies
  * @param {Object} allMovies JSON from api with list of movies
- * @param {object} movieSearchCriteria object of the user input
+ * @param {movieSearchCriteriaModel} movieSearchCriteria object of the user input
  */
-async function filterMovies(allMovies, movieSearchCriteria) {
-    let filteredMoves = [];
+async function filterMovies(allMovies: any , movieSearchCriteria: movieSearchCriteriaModel): Promise<singleGenerationObject> {
+    let filteredMoves: MovieResult[] = [];
+    console.log(allMovies);
     try {
-        filteredMoves = allMovies.filter((movie, index) => {
+        filteredMoves = allMovies.filter((movie: any, index: number) => {
             return index <= 10;
         });
     } catch (err) {
         logger.error(`Error in filtering movies ${err}`);
     }
 
-    const movieReturnObj = {
+    const movieReturnObj: singleGenerationObject = {
         movieGenerationDate: new Date().toISOString(),
         movieSearchCriteria: movieSearchCriteria,
         movies: [],
@@ -44,15 +48,17 @@ async function filterMovies(allMovies, movieSearchCriteria) {
             newMovieObj.movieId = movie.id;
             newMovieObj.movieTitle = movie.title;
             newMovieObj.movieDescription = movie.overview;
-            newMovieObj.movieReleaseYear = movie.release_date.split('-')[0];
+            newMovieObj.movieReleaseYear = (movie.release_date) ? movie.release_date.split('-')[0] : undefined;
             // TODO will have to make a dictionary with genres so they can be properly returned
-            newMovieObj.movieGenres = movie.genre_ids;
+            newMovieObj.movieGenres = (movie.genre_ids)
             newMovieObj.moviePopularity = movie.popularity;
+            
             movieReturnObj.movies.push(newMovieObj);
         }
         return movieReturnObj;
     } catch (err) {
         logger.error(` Failed to format movies ${err}`);
+        throw new Error();
     }
 }
 
@@ -60,21 +66,22 @@ async function filterMovies(allMovies, movieSearchCriteria) {
  * @desc place holder for movieGeneration object
  * @return {Object} returns a blank movie object
  */
-function returnMovieGenerationObject() {
+function returnMovieGenerationObject(): movieObject {
     return {
-        movieId: null,
-        movieTitle: null,
-        movieDescription: null,
-        movieReleaseYear: null,
-        movieGenres: null,
-        moviePopularity: null,
+        movieId: 0,
+        movieTitle: '',
+        movieDescription: '',
+        movieReleaseYear: '',
+        movieGenres: [],
+        moviePopularity: 0,
     };
 }
+
 /**
  * @Desc returns fotmatted movies to the api
  */
-export async function returnMovies() {
-    const movieSearchCriteria = {
+export async function returnMovies(): Promise<singleGenerationObject> {
+    const movieSearchCriteria: movieSearchCriteriaModel = {
         sort_by: 'popularity.desc',
         with_genres: '28,53',
         primary_release_year: 2015,
@@ -86,6 +93,7 @@ export async function returnMovies() {
             return filteredMovies;
         }).catch((err) => {
             logger.error(`Failed to return movies ${err}`);
+            throw new Error();
         });
 }
 
