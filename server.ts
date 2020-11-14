@@ -1,7 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import apiUserRoutes from './routes/api/users';
-import apiMovieRoutes from './routes/api/movies';
+import apiUserRoutes from './routes/api/usersAPI';
+import apiMovieRoutes from './routes/api/moviesAPI';
 import mongoose from 'mongoose';
 import {logger} from './helpers/logger';
 import cors from 'cors';
@@ -25,7 +25,7 @@ const db = endpoints.MONGO_URI;
 // connect to db
 mongoose.connect(db, {useNewUrlParser: true, useUnifiedTopology: true})
     .then(() => {
-        console.log('Mongoose successfully connected');
+        logger.info('Mongoose successfully connected');
     }).catch((err) => {
         logger.error(err);
     });

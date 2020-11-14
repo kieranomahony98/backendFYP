@@ -1,6 +1,6 @@
 import express from 'express';
 import {logger} from '../../helpers/logger';
-import {returnMovies} from '../../services/filterMovies';
+import {returnMovies} from '../../services/discoverMoviesService';
 import {writeToDatabase, getMoviesFromDatabase} from '../../services/movieDbService';
 
 // eslint-disable-next-line new-cap
@@ -12,6 +12,7 @@ const router = express.Router();
  */
 
 router.get('/testingMovies', (req, res) => {
+    const {userSearchCriteria} = req.body;
     returnMovies()
         .then((formattedMovies) => {
             writeToDatabase(formattedMovies, 'kieran@123.ie')

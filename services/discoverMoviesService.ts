@@ -11,7 +11,7 @@ const moviedb = new MovieDb(endpointsConfig.TMDB3);
  * @Desc function returns list of movies from api
  * @param {object} movieSearchCriteria object of the user input
  */
-async function getMovies(movieSearchCriteria: movieSearchCriteriaModel) {
+async function getMovies(movieSearchCriteria: movieSearchCriteriaModel): Promise<MovieResult[] | undefined> {
     return await moviedb.discoverMovie(movieSearchCriteria).then((movies) => {
         return movies.results;
     }).catch((err) => {

@@ -1,4 +1,4 @@
-import MovieSchema from '../models/movieModel';
+import MovieSchema from '../MongoModels/movieModel';
 import {logger} from '../helpers/logger';
 import {movieGenerationModel, singleGenerationObject} from '../tsModels/movieGernerationModel'
 /**
@@ -40,14 +40,20 @@ export async function writeToDatabase(movieGeneration: singleGenerationObject, u
  * get movie curation for a user
  * @param {String} userId
  */
-export async function getMoviesFromDatabase(userId: string) {
-    const userMovies: movieGenerationModel | null = await MovieSchema.findOne({userId: userId})
+export async function getMoviesFromDatabase(userId: string): Promise<singleGenerationObject[]| String > {
+    try{
+        const userMovies: movieGenerationModel | null = await MovieSchema.findOne({userId: userId})
        
-    if (userMovies) {
-        return userMovies;
-    } else {
-        return `Unable to find user movies for ${userId}`;
+        if (userMovies) {
+            return userMovies.userMovies;
+        } else {
+            return `Unable to find user movies for ${userId}`;
+        }
+    }catch(err){
+        logger.error(`failed to retrieve user movies for ${userId}`);
+        throw new Error();
     }
+
 }
 
 
