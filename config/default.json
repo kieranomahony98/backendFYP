@@ -1,0 +1,8 @@
+{
+    "NODE_ENV": "developement",
+    "MONGO_URI": "mongodb+srv://kieranomahony98:KwSDUrPCllgOu4T2@cluster0.a5nea.mongodb.net/CineGuestion?retryWrites=true&w=majority",
+    "SECRET_OR_KEY": "bAKVdqczerYAYKdMxsaBzbFUJU6ZvL2LwZuxhtpS",
+    "PORT": 8080,
+    "TMDB3": "d61cca13e8ffa8187cbf047d7bca9ffb",
+    "jwtSecret": "cg_myJwtSecret"
+}

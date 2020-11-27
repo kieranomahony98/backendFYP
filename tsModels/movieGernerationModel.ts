@@ -1,23 +1,24 @@
 import * as mongoose from "mongoose";
 
-export interface movieGenerationModel extends mongoose.Document{ 
+export interface movieGenerationModel extends mongoose.Document {
     userId: string,
     userMovies: singleGenerationObject[],
 }
 
 export interface singleGenerationObject {
-    movieGenerationDate: string                
+    movieGenerationDate: string
     movieSearchCriteria: movieSearchCriteriaModel,
     movies: movieObject[],
 }
 
 export interface movieObject {
     movieId: number | undefined,
-    movieTitle: string| undefined,
-    movieDescription: string| undefined,
-    movieReleaseYear: string| undefined,
-    movieGenres: number[]| undefined,
-    moviePopularity: number| undefined,
+    movieTitle: string | undefined,
+    movieDescription: string | undefined,
+    movieReleaseYear: string | undefined,
+    movieGenres: string | undefined,
+    moviePopularity: string | undefined,
+    movieImagePath: string | undefined
 }
 
 export interface movieSearchCriteriaModel {
