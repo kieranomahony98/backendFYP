@@ -14,16 +14,20 @@ const MovieSchema = new Schema({
             movieSearchCriteria: {
                 sort_by: {
                     type: String,
-                    required: true,
+                    required: false,
                 },
                 with_genres: {
                     type: Array,
-                    required: true,
+                    required: false,
                 },
                 primary_release_year: {
                     type: String,
                     required: false,
                 },
+                with_keywords: {
+                    type: String,
+                    required: false
+                }
             },
             movies:
                 [
@@ -45,13 +49,17 @@ const MovieSchema = new Schema({
                             required: false,
                         },
                         movieGenres: {
-                            type: Array,
+                            type: String,
                             required: true,
                         },
                         moviePopularity: {
-                            type: Number,
+                            type: String,
                             required: false,
                         },
+                        movieImagepath: {
+                            type: String,
+                            required: false
+                        }
                     },
                 ],
         },

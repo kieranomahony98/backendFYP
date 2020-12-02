@@ -13,16 +13,16 @@ router.post('/login', (req, res) => {
     return UserSchema.findOne({ email })
         .then((user) => {
             if (!user) {
-                return null;
+                return res.status(400).send('This email does not exist');
             }
             //validate hashed password 
             bcrypt.compare(password, user.password)
                 .then((isMatch) => {
                     if (!isMatch) {
-                        return 'Invalid Credentails';
+                        return res.status(401).send('Invalid Credentails');
                     }
                     jwt.sign(
-                        { email: user.email },
+                        { id: user._id },
                         config.get('jwtSecret'),
                         { expiresIn: 3600 * 6 },
                         (err, token) => {

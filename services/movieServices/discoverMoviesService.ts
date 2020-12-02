@@ -76,7 +76,6 @@ export function returnMovieGenerationObject(): movieObject {
         movieGenres: '',
         moviePopularity: '',
         movieImagePath: '',
-
     };
 }
 
@@ -89,7 +88,6 @@ export async function returnMovies(movieSearchCriteria: movieSearchCriteriaModel
     return getMovies(movieSearchCriteria)
         .then((movies) => filterMovies(movies, movieSearchCriteria))
         .then((filteredMovies) => {
-            console.log(filteredMovies);
             return filteredMovies;
         }).catch((err) => {
             logger.error(`Failed to return movies ${err} `);

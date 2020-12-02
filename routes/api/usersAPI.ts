@@ -48,7 +48,6 @@ router.post('/login', (req, res) => {
 
 router.post('/user', auth, (req: Request, res: Response) => {
     const { id } = req.body.user;
-    console.log(id);
     UserSchema.findById(id).select('-password')
         .then((user) => {
             console.log(user);
@@ -105,6 +104,13 @@ router.post('/register', (req, res) => {
                 });
         });
     });
+});
+
+router.post('/get/userMovies', auth, (req, res) => {
+    const { id } = req.body.user;
+
+
+
 });
 /** @Route Post /api/users/update
  *  @Desc provides api for user to update their profile
