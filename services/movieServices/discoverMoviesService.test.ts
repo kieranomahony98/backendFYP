@@ -1,4 +1,9 @@
-import { filterMovies, returnMovieGenerationObject } from './discoverMoviesService';
+import { logger } from '../../helpers/logger';
+import * as discoverMovies from './discoverMoviesService';
+import { MovieDb } from 'moviedb-promise';
+import config from 'config';
+
+
 const emptyMovieObject = {
     movieId: 0,
     movieTitle: '',
@@ -126,6 +131,10 @@ const mockMovieApiCall = [
         id: 337401
     },
 ]
+const mockMovieDbCall = {
+    id: 1,
+    results: mockMovieApiCall
+}
 const mockFilterMoviesReturn = {
     movieGenerationDate: new Date().toISOString(),
     movieSearchCriteria: mockSurveyRequest,
@@ -195,42 +204,25 @@ const mockFilterMoviesReturn = {
         }
     ],
 }
-const badMockApiCall = [
-    {
-        video: false,
-        popularity: 1400.086,
-        vote_count: 12,
-        release_date: '2020-11-13',
-        adult: false,
-        backdrop_path: '/fTDzKoQIh1HeyjfpG5AHMi2jxAJ.jpg',
-        title: 'Chick Fight',
-        genre_ids: [28, 35],
-        vote_average: 7.1,
-        original_language: 'en',
-        original_title: 'Chick Fight',
-        poster_path: '/4ZocdxnOO6q2UbdKye2wgofLFhB.jpg',
-        overview: 'When Anna Wyncomb is introduced to an an underground, all-female fight club in order to turn the mess of her life around, she discovers she is much more personally connected to the history of the club than she could ever imagine.'
-    },
-]
 
 describe('tests for discover movie', () => {
     it('should return a blank movie object', () => {
-        const emptyObject = returnMovieGenerationObject();
+        const emptyObject = discoverMovies.returnMovieGenerationObject();
         expect(emptyObject).toEqual(emptyMovieObject);
     });
     it('should return a filterd list of movies', async () => {
-        filterMovies(mockMovieApiCall, mockSurveyRequest)
+        discoverMovies.filterMovies(mockMovieApiCall, mockSurveyRequest)
             .then((filteredMovies) => {
-                expect(filteredMovies).toEqual(mockFilterMoviesReturn)
+                expect(typeof filteredMovies.movieGenerationDate).toEqual(typeof "");
+                expect(filteredMovies.movies).toEqual(mockFilterMoviesReturn.movies);
+                expect(filteredMovies.movieSearchCriteria).toEqual(mockFilterMoviesReturn.movieSearchCriteria);
             })
     });
-    it('should throw an error', async () => {
-        filterMovies(badMockApiCall, mockSurveyRequest)
-            .then((movies) => {
-                console.log('in movies');
-            })
+    it('should throw a filter error', async () => {
+        discoverMovies.filterMovies(null, mockSurveyRequest)
             .catch((err) => {
-                console.log(err);
-            })
-    })
+                expect(typeof err).toEqual(typeof {});
+            });
+    });
+
 });

@@ -12,7 +12,10 @@ export interface singleGenerationObject {
     movieSearchCriteria: movieSearchCriteriaModel,
     movies: movieObject[],
 }
-
+export interface databasePlaylistReturn {
+    weeklyPlaylists: singleGenerationObject,
+    monthlyPlaylists: singleGenerationObject
+}
 export interface movieObject {
     movieId: number | undefined,
     movieTitle: string | undefined,
@@ -23,10 +26,7 @@ export interface movieObject {
     movieImagePath: string | undefined
 }
 
-export interface movieDBCurationRetuns {
-    userId: String,
-    userMovies: singleGenerationObject[];
-}
+
 export interface movieSearchCriteriaModel {
     region?: string;
     sort_by?: 'popularity.asc' | 'popularity.desc' | 'release_date.asc' | 'release_date.desc' | 'revenue.asc' | 'revenue.desc' | 'primary_release_date.asc' | 'primary_release_date.desc' | 'original_title.asc' | 'original_title.desc' | 'vote_average.asc' | 'vote_average.desc' | 'vote_count.asc' | 'vote_count.desc';
@@ -68,7 +68,7 @@ export interface MovieResult {
     release_date?: string;
     genre_ids?: Array<number>;
     id?: number;
-    media_type: 'movie';
+    media_type?: 'movie';
     original_title?: string;
     original_language?: string;
     title?: string;

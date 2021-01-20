@@ -9,6 +9,7 @@ import jwt from 'jsonwebtoken';
 
 // eslint-disable-next-line new-cap
 const router = express.Router();
+
 router.post('/login', (req, res) => {
     const { email, password } = req.body;
     return UserSchema.findOne({ email })
@@ -28,6 +29,7 @@ router.post('/login', (req, res) => {
                         { expiresIn: 3600 * 6 },
                         (err, token) => {
                             if (err) {
+                                logger.error(`Failed to sign jwt: ${err.message}`)
                                 throw err;
                             }
                             res.json({
@@ -41,7 +43,7 @@ router.post('/login', (req, res) => {
                         });
                 });
         }).catch((err) => {
-            logger.error(err);
+            logger.error(`failed to log in user: ${err.message}`);
             throw err;
         });
 });
@@ -53,7 +55,10 @@ router.post('/user', auth, (req: Request, res: Response) => {
         .then((user) => {
             logger.info(`user found: ${user}`);
             res.json(user);
-        });
+        }).catch(err => {
+            logger.error(`Failed to validate user: ${err.message}`);
+            throw err;
+        })
 });
 
 
@@ -68,6 +73,7 @@ router.post('/register', (req, res) => {
                 res.json({ msg: 'this user already exists' });
             }
         }).catch((err) => {
+            logger.error(`Failed to get user: ${err.message}`);
             return res.status(404).send('Error in retrieving user');
         });
 
@@ -79,7 +85,8 @@ router.post('/register', (req, res) => {
     bcrypt.genSalt(10, async (err, salt) => {
         bcrypt.hash(password, salt, (err, hash) => {
             if (err) {
-                throw new Error();
+                logger.error(`Failed to hash password: ${err.message}`)
+                throw err;
             }
             newUser.password = hash;
             newUser.save()
@@ -90,6 +97,7 @@ router.post('/register', (req, res) => {
                         { expiresIn: 3600 * 6 },
                         (err, token) => {
                             if (err) {
+                                logger.error(`failed to sign jwt: ${err.message}`);
                                 throw err;
                             }
                             res.json({
@@ -102,18 +110,13 @@ router.post('/register', (req, res) => {
                             });
                         });
                 }).catch((err) => {
-                    logger.error(err);
+                    logger.error(`failed to save new user: ${err.message}`);
+                    throw err;
                 });
         });
     });
 });
 
-router.post('/get/userMovies', auth, (req, res) => {
-    const { id } = req.body.user;
-
-
-
-});
 /** @Route Post /api/users/update
  *  @Desc provides api for user to update their profile
 */

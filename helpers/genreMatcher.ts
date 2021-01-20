@@ -6,17 +6,7 @@ export async function listMatcher(movieGenres: number[] | string[] | undefined):
     return genreMatcher(genres);
 }
 
-export async function stringMatcher(movieGenres: String) {
-    if (!movieGenres) {
-        return 'All Genres'
-    };
-
-    const genres: string[] = movieGenres.split(",");
-    return genreMatcher(genres);
-
-}
-
-function genreMatcher(genres: string[]) {
+function genreMatcher(genres: string[]): string {
     let returnGenres = '';
     for (const genre of genres) {
         returnGenres += movieGenreOBJ[genre] ? (returnGenres.length === 0) ? `${movieGenreOBJ[genre]}` : `, ${movieGenreOBJ[genre]}` : null;

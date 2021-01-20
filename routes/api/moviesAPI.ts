@@ -20,12 +20,13 @@ router.post('/movieGeneration', movieAuth, (req, res) => {
                     .then((movieWritten) => {
                         logger.info(`Movie successfully wrote to DB`);
                     }).catch((err) => {
-                        logger.error(err);
+                        logger.error(`Failed to write movies to DB: ${err.message}`);
                     });
             };
             res.send(JSON.stringify(formattedMovies));
         }).catch((err) => {
             logger.error(`${err} error in api`);
+            return res.status(404).send("Error getting movies");
         });
 });
 
@@ -39,11 +40,11 @@ router.post('/returnMovies', movieAuth, (req, res) => {
             if (userMovieGenerations) {
                 res.status(200).send(userMovieGenerations);
             } else {
-                res.status(404).send('Unabel to find user movies');
+                res.status(404).send('Unable to find user movies');
             }
         }).catch((err) => {
             logger.error(err);
-            throw new Error();
+            res.status(404).send('Unable to find user movies');
         });
 });
 
@@ -57,7 +58,7 @@ router.post('/getPlaylists', movieAuth, (req, res) => {
             return res.send(JSON.stringify(playlists));
         })
         .catch(err => {
-            logger.error('Failed to get playlists');
+            logger.error(`Failed to get playlists ${err.message}`);
             res.status(404).send('Failed to get user movies from database');
         });
 });

@@ -34,8 +34,6 @@ export function movieAuth(req: any, res: any, next: any) {
         }
 
         next();
-
-
     } catch (err) {
         logger.error(`movie Auth: ${err}`);
         res.status(400).json({ msg: 'Token is not valid' });
