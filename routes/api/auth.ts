@@ -45,15 +45,15 @@ router.post('/login', (req, res) => {
 });
 
 router.post('/register', (req, res) => {
-    console.log('called');
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
         return res.status(400).send("Please enter all fields");
     }
+
     UserSchema.findOne({ email })
         .then((user) => {
             if (user) {
-                res.json({ msg: 'this user already exists' });
+                return res.json({ msg: 'this user already exists' });
             }
         });
 
@@ -63,6 +63,9 @@ router.post('/register', (req, res) => {
         password
     });
     bcrypt.genSalt(10, async (err, salt) => {
+        if (err) {
+            throw new Error();
+        }
         bcrypt.hash(password, salt, (err, hash) => {
             if (err) {
                 throw new Error();

@@ -48,12 +48,14 @@ router.post('/login', (req, res) => {
 
 router.post('/user', auth, (req: Request, res: Response) => {
     const { id } = req.body.user;
+    logger.info(`user info decoded ${id}`);
     UserSchema.findById(id).select('-password')
         .then((user) => {
-            console.log(user);
+            logger.info(`user found: ${user}`);
             res.json(user);
         });
 });
+
 
 router.post('/register', (req, res) => {
     const { name, email, password } = req.body;

@@ -1,7 +1,7 @@
 import express from 'express';
 import { logger } from '../../helpers/logger';
 import { returnMovies } from '../../services/movieServices/discoverMoviesService';
-import { writeToDatabase, getMoviesFromDatabase } from '../../services/movieServices/movieDbService';
+import { writeToDatabase, getMoviesFromDatabase, getPlaylistsFromDatabase } from '../../services/movieServices/movieDbService';
 import { movieAuth } from '../../middleware/auth';
 
 // eslint-disable-next-line new-cap
@@ -13,14 +13,12 @@ const router = express.Router();
  */
 router.post('/movieGeneration', movieAuth, (req, res) => {
     const id = (req.body.user) ? req.body.user.id : null;
-
-    returnMovies(JSON.parse(JSON.stringify(req.body)))
+    returnMovies(JSON.parse(JSON.stringify(req.body.MovieGenerationModel)))
         .then((formattedMovies) => {
             if (id) {
-                console.log('going into if');
                 writeToDatabase(formattedMovies, id)
                     .then((movieWritten) => {
-                        logger.info(`Movie successfully wrote to DB: ${movieWritten}`);
+                        logger.info(`Movie successfully wrote to DB`);
                     }).catch((err) => {
                         logger.error(err);
                     });
@@ -31,14 +29,36 @@ router.post('/movieGeneration', movieAuth, (req, res) => {
         });
 });
 
-router.get('/returnMovies', (req, res) => {
-    getMoviesFromDatabase('kieran@123.ie')
+router.post('/returnMovies', movieAuth, (req, res) => {
+    const id = (req.body.user) ? req.body.user.id : null;
+    if (!id) {
+        return res.status(401).send("Please log in to access previous curations");
+    }
+    getMoviesFromDatabase(id)
         .then((userMovieGenerations) => {
-            res.send(userMovieGenerations);
+            if (userMovieGenerations) {
+                res.status(200).send(userMovieGenerations);
+            } else {
+                res.status(404).send('Unabel to find user movies');
+            }
         }).catch((err) => {
             logger.error(err);
             throw new Error();
         });
 });
 
+router.post('/getPlaylists', movieAuth, (req, res) => {
+    const id = (req.body.user) ? req.body.user.id : null;
+    if (!id) {
+        return res.status(401).send("Please log in to see your playlists")
+    }
+    getPlaylistsFromDatabase(id)
+        .then((playlists) => {
+            return res.send(JSON.stringify(playlists));
+        })
+        .catch(err => {
+            logger.error('Failed to get playlists');
+            res.status(404).send('Failed to get user movies from database');
+        });
+});
 export default router;

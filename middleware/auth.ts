@@ -5,12 +5,14 @@ import { logger } from '../helpers/logger';
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function auth(req: any, res: any, next: any) {
     try {
+        logger.info('Verifying user authentication');
+
         const token = req.body.headers['x-auth-token'];
         if (!token) {
             return res.status(401).send('no token, authorization denied');
         }
         const decoded = jwt.verify(token, config.get('jwtSecret'));
-
+        logger.info(`User token valid ${decoded}`);
         //add user from payload
         req.body.user = decoded;
         next();
@@ -22,11 +24,13 @@ export function auth(req: any, res: any, next: any) {
 
 export function movieAuth(req: any, res: any, next: any) {
     try {
-        if (req.body.headers) {
-            const token = req.body.headers['x-auth-token'];
+        logger.info('Verifying user authentication');
+
+        if (req.body['x-auth-token']) {
+            const token = req.body['x-auth-token'];
             const decoded = jwt.verify(token, config.get('jwtSecret'));
             req.body.user = decoded;
-            next();
+            logger.info(`User token valid ${decoded}`);
         }
 
         next();

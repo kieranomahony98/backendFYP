@@ -3,6 +3,8 @@ import * as mongoose from "mongoose";
 export interface movieGenerationModel extends mongoose.Document {
     userId: string,
     userMovies: singleGenerationObject[],
+    weeklyPlaylists: singleGenerationObject,
+    monthlyPlaylists: singleGenerationObject
 }
 
 export interface singleGenerationObject {
@@ -16,11 +18,15 @@ export interface movieObject {
     movieTitle: string | undefined,
     movieDescription: string | undefined,
     movieReleaseYear: string | undefined,
-    movieGenres: string | undefined,
+    movieGenres: string | undefined | string[],
     moviePopularity: string | undefined,
     movieImagePath: string | undefined
 }
 
+export interface movieDBCurationRetuns {
+    userId: String,
+    userMovies: singleGenerationObject[];
+}
 export interface movieSearchCriteriaModel {
     region?: string;
     sort_by?: 'popularity.asc' | 'popularity.desc' | 'release_date.asc' | 'release_date.desc' | 'revenue.asc' | 'revenue.desc' | 'primary_release_date.asc' | 'primary_release_date.desc' | 'original_title.asc' | 'original_title.desc' | 'vote_average.asc' | 'vote_average.desc' | 'vote_count.asc' | 'vote_count.desc';

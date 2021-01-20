@@ -1,13 +1,25 @@
-export default async function (movieGenres: number[] | undefined): Promise<string | undefined> {
-    console.log(movieGenres);
+export async function listMatcher(movieGenres: number[] | string[] | undefined): Promise<string> {
     if (!movieGenres) {
-        return undefined;
+        return '';
     }
     const genres: string[] = movieGenres.toString().split(",");
+    return genreMatcher(genres);
+}
+
+export async function stringMatcher(movieGenres: String) {
+    if (!movieGenres) {
+        return 'All Genres'
+    };
+
+    const genres: string[] = movieGenres.split(",");
+    return genreMatcher(genres);
+
+}
+
+function genreMatcher(genres: string[]) {
     let returnGenres = '';
     for (const genre of genres) {
         returnGenres += movieGenreOBJ[genre] ? (returnGenres.length === 0) ? `${movieGenreOBJ[genre]}` : `, ${movieGenreOBJ[genre]}` : null;
-
     }
     return returnGenres;
 }

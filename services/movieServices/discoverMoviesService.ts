@@ -2,7 +2,7 @@
 import { MovieDb } from 'moviedb-promise';
 import { logger } from '../../helpers/logger';
 import config from 'config';
-import returnGenres from '../../helpers/genreMatcher';
+import { listMatcher } from '../../helpers/genreMatcher';
 import { movieObject, movieSearchCriteriaModel, singleGenerationObject, MovieResult } from '../../tsModels/movieGernerationModel';
 
 const moviedb = new MovieDb(config.get('TMDB3'));
@@ -26,6 +26,7 @@ async function getMovies(movieSearchCriteria: movieSearchCriteriaModel): Promise
  * @param {Object} allMovies JSON from api with list of movies
  * @param {movieSearchCriteriaModel} movieSearchCriteria object of the user input
  */
+
 export async function filterMovies(allMovies: any, movieSearchCriteria: movieSearchCriteriaModel): Promise<singleGenerationObject> {
     let filteredMoves: MovieResult[] = [];
     try {
@@ -45,16 +46,16 @@ export async function filterMovies(allMovies: any, movieSearchCriteria: movieSea
 
     try {
         for (const movie of filteredMoves) {
-            console.log(movie);
             const newMovieObj = returnMovieGenerationObject();
             newMovieObj.movieId = movie.id;
             newMovieObj.movieTitle = movie.title;
             newMovieObj.movieDescription = movie.overview;
             newMovieObj.movieReleaseYear = (movie.release_date) ? movie.release_date.split('-')[0] : undefined;
-            newMovieObj.movieGenres = await returnGenres(movie.genre_ids)
+            newMovieObj.movieGenres = await listMatcher(movie.genre_ids)
             newMovieObj.moviePopularity = movie.vote_average ? `${movie.vote_average * 10}%` : 'This movie has no votes';
             newMovieObj.movieImagePath = movie.poster_path;
             movieReturnObj.movies.push(newMovieObj);
+            console.log(newMovieObj.movieGenres);
         }
         return movieReturnObj;
     } catch (err) {
@@ -70,22 +71,27 @@ export async function filterMovies(allMovies: any, movieSearchCriteria: movieSea
 export function returnMovieGenerationObject(): movieObject {
     return {
         movieId: 0,
+        movieImagePath: '',
         movieTitle: '',
         movieDescription: '',
         movieReleaseYear: '',
         movieGenres: '',
         moviePopularity: '',
-        movieImagePath: '',
+
     };
 }
-
+async function convertValues(movieSearchCriteria: movieSearchCriteriaModel) {
+    if (movieSearchCriteria.with_genres) {
+        movieSearchCriteria.with_genres = movieSearchCriteria.with_genres.toString();
+    }
+    return movieSearchCriteria;
+}
 /**
  * @Desc returns fotmatted movies to the api
  */
 export async function returnMovies(movieSearchCriteria: movieSearchCriteriaModel): Promise<singleGenerationObject> {
-    movieSearchCriteria.with_genres = (movieSearchCriteria.with_genres) ? (movieSearchCriteria.with_genres).toString() : '';
-    console.log(movieSearchCriteria);
-    return getMovies(movieSearchCriteria)
+    return (convertValues(movieSearchCriteria)
+        .then((searchCriteria) => getMovies(searchCriteria)))
         .then((movies) => filterMovies(movies, movieSearchCriteria))
         .then((filteredMovies) => {
             return filteredMovies;
