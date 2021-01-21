@@ -39,7 +39,7 @@ export async function filterMovies(allMovies: any, movieSearchCriteria: movieSea
     }
 
     try {
-        const movies = filteredMoves.map(async (movie) => {
+        const movies = await Promise.all(filteredMoves.map(async (movie) => {
             const genres = await listMatcher(movie.genre_ids);
             return ({
                 movieId: movie.id,
@@ -50,11 +50,11 @@ export async function filterMovies(allMovies: any, movieSearchCriteria: movieSea
                 moviePopularity: movie.vote_average ? `${movie.vote_average * 10}%` : 'This movie has no votes',
                 movieImagePath: movie.poster_path
             });
-        });
+        }));
         return {
             movieGenerationDate: new Date().toISOString(),
             movieSearchCriteria: movieSearchCriteria,
-            movies: await Promise.all(movies)
+            movies
         } as singleGenerationObject;
 
     } catch (err) {
@@ -82,13 +82,13 @@ export function returnMovieGenerationObject(): movieObject {
 /**
  * @Desc returns fotmatted movies to the api
  */
+
 export async function returnMovies(movieSearchCriteria: movieSearchCriteriaModel): Promise<singleGenerationObject> {
     return (
         getMovies(movieSearchCriteria))
         .then((movies) => filterMovies(movies, movieSearchCriteria))
-        .then((filteredMovies) => {
-            return filteredMovies;
-        }).catch((err) => {
+        .then((filteredMovies) => filteredMovies)
+        .catch((err) => {
             logger.error(`Failed to return movies ${err} `);
             throw new Error();
         });

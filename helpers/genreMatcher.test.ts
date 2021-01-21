@@ -15,5 +15,4 @@ describe("Tests to cover genre matcher", () => {
                 expect(genres).toEqual('Drama');
             })
     });
-
-})
+});

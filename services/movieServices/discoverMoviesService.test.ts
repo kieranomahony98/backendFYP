@@ -16,7 +16,8 @@ const emptyMovieObject = {
 };
 const mockSurveyRequest = {
     'with_genres': '1,2,3'
-}
+};
+
 const mockMovieApiCall = [
     {
         video: false,
@@ -203,7 +204,7 @@ const mockFilterMoviesReturn = {
             movieImagePath: '/aKx1ARwG55zZ0GpRvU2WrGrCG9o.jpg'
         }
     ],
-}
+};
 
 describe('tests for discover movie', () => {
     it('should return a blank movie object', () => {
@@ -216,7 +217,7 @@ describe('tests for discover movie', () => {
                 expect(typeof filteredMovies.movieGenerationDate).toEqual(typeof "");
                 expect(filteredMovies.movies).toEqual(mockFilterMoviesReturn.movies);
                 expect(filteredMovies.movieSearchCriteria).toEqual(mockFilterMoviesReturn.movieSearchCriteria);
-            })
+            });
     });
     it('should throw a filter error', async () => {
         discoverMovies.filterMovies(null, mockSurveyRequest)

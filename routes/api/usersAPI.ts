@@ -29,7 +29,7 @@ router.post('/login', (req, res) => {
                         { expiresIn: 3600 * 6 },
                         (err, token) => {
                             if (err) {
-                                logger.error(`Failed to sign jwt: ${err.message}`)
+                                logger.error(`Failed to sign jwt: ${err.message}`);
                                 throw err;
                             }
                             res.json({
@@ -44,7 +44,7 @@ router.post('/login', (req, res) => {
                 });
         }).catch((err) => {
             logger.error(`failed to log in user: ${err.message}`);
-            throw err;
+            return res.status(500).send("log in failed");
         });
 });
 
@@ -55,10 +55,10 @@ router.post('/user', auth, (req: Request, res: Response) => {
         .then((user) => {
             logger.info(`user found: ${user}`);
             res.json(user);
-        }).catch(err => {
+        }).catch((err) => {
             logger.error(`Failed to validate user: ${err.message}`);
-            throw err;
-        })
+            return res.status(500).send("failed to validate users");
+        });
 });
 
 
@@ -85,7 +85,7 @@ router.post('/register', (req, res) => {
     bcrypt.genSalt(10, async (err, salt) => {
         bcrypt.hash(password, salt, (err, hash) => {
             if (err) {
-                logger.error(`Failed to hash password: ${err.message}`)
+                logger.error(`Failed to hash password: ${err.message}`);
                 throw err;
             }
             newUser.password = hash;
@@ -111,7 +111,7 @@ router.post('/register', (req, res) => {
                         });
                 }).catch((err) => {
                     logger.error(`failed to save new user: ${err.message}`);
-                    throw err;
+                    return res.status(500).send("failed to save user failed");
                 });
         });
     });

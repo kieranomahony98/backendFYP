@@ -1,31 +1,5 @@
 import * as mongoose from "mongoose";
 
-export interface movieGenerationModel extends mongoose.Document {
-    userId: string,
-    userMovies: singleGenerationObject[],
-    weeklyPlaylists: singleGenerationObject,
-    monthlyPlaylists: singleGenerationObject
-}
-
-export interface singleGenerationObject {
-    movieGenerationDate: string
-    movieSearchCriteria: movieSearchCriteriaModel,
-    movies: movieObject[],
-}
-export interface databasePlaylistReturn {
-    weeklyPlaylists: singleGenerationObject,
-    monthlyPlaylists: singleGenerationObject
-}
-export interface movieObject {
-    movieId: number | undefined,
-    movieTitle: string | undefined,
-    movieDescription: string | undefined,
-    movieReleaseYear: string | undefined,
-    movieGenres: string | undefined | string[],
-    moviePopularity: string | undefined,
-    movieImagePath: string | undefined
-}
-
 
 export interface movieSearchCriteriaModel {
     region?: string;
@@ -78,3 +52,31 @@ export interface MovieResult {
     video?: boolean;
     vote_average?: number;
 }
+export interface movieObject {
+    movieId: number | undefined,
+    movieTitle: string | undefined,
+    movieDescription: string | undefined,
+    movieReleaseYear: string | undefined,
+    movieGenres: string | undefined | string[],
+    moviePopularity: string | undefined,
+    movieImagePath: string | undefined
+}
+
+export interface singleGenerationObject {
+    movieGenerationDate: string
+    movieSearchCriteria: movieSearchCriteriaModel,
+    movies: movieObject[],
+}
+
+export interface movieGenerationModel extends mongoose.Document {
+    userId: string,
+    userMovies: singleGenerationObject[],
+    weeklyPlaylists: singleGenerationObject,
+    monthlyPlaylists: singleGenerationObject
+}
+
+export interface databasePlaylistReturn {
+    weeklyPlaylists: singleGenerationObject,
+    monthlyPlaylists: singleGenerationObject
+}
+

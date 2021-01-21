@@ -1,23 +1,39 @@
 import MovieSchema from '../../MongoModels/movieModel';
 import { logger } from '../../helpers/logger';
 import { movieGenerationModel, singleGenerationObject, databasePlaylistReturn } from '../../tsModels/movieGernerationModel';
-import { listMatcher } from '../../helpers/genreMatcher';
+import { stringMatcher } from '../../helpers/genreMatcher';
+import { moviedb } from './discoverMoviesService';
+/**
+ * Check if user
+ * @param {String} ID
+ */
+async function getUser(userId: string) {
+    return await MovieSchema.findOne({ userId })
+        .then((user) => {
+            return user;
+        }).catch((err) => {
+            logger.error(err);
+            throw err;
+        });
+}
+
 /**
  * @Desc writes users to movies to database
  * @param {MovieObject} movieGeneration generated movies to write to databaes
  * @param {String} userId the id of the user in question
  */
-export async function writeToDatabase(movieGeneration: singleGenerationObject, userId: string): Promise<movieGenerationModel> {
+export async function writeToDatabase(userMovies: singleGenerationObject, userId: string): Promise<movieGenerationModel> {
     const user = await getUser(userId)
-        .then(user => user)
+        .then((user) => user)
         .catch((err) => {
             logger.error(`Error in getting user ${err}`);
+            throw err;
         });
 
     if (user) {
         return MovieSchema.updateOne(
-            { userId: userId },
-            { $push: { userMovies: movieGeneration } })
+            { userId },
+            { $push: { userMovies } })
             .then((written) => {
                 return written;
             }).catch((err) => {
@@ -27,8 +43,8 @@ export async function writeToDatabase(movieGeneration: singleGenerationObject, u
 
     } else {
         const newuserMovies = new MovieSchema({
-            userId: userId,
-            userMovies: movieGeneration,
+            userId,
+            userMovies
         });
         return newuserMovies.save()
             .then((res) => {
@@ -45,25 +61,25 @@ export async function writeToDatabase(movieGeneration: singleGenerationObject, u
  * @param {String} userId
  */
 export async function getMoviesFromDatabase(userId: string): Promise<singleGenerationObject[] | null> {
+
+    const user = await getUser(userId)
+        .then((user) => user)
+        .catch((err) => {
+            logger.error(`Error in getting user ${err}`);
+            throw err;
+        });
     try {
-        const user = await getUser(userId)
-            .then((user) => user)
-            .catch((err) => {
-                logger.error(`Error in getting user ${err}`);
-                throw err;
-            });
         if (user) {
             for (const c of user.userMovies) {
-                c.movieSearchCriteria.with_genres = (c.movieSearchCriteria.with_genres) ? await listMatcher(c.movieSearchCriteria.with_genres[0].split(',')) : 'All Genres';
+                c.movieSearchCriteria.with_genres = (c.movieSearchCriteria.with_genres) ? await stringMatcher(c.movieSearchCriteria.with_genres[0]) : 'All Genres';
             }
             return user.userMovies;
-        } else {
-            return null;
         }
     } catch (err) {
-        logger.error(`failed to retrieve user movies for ${userId}`);
+        logger.error(`failed to retrieve user movies for ${err.message}`);
         throw err;
     }
+    return null;
 }
 
 export async function getPlaylistsFromDatabase(userId: string): Promise<databasePlaylistReturn | undefined> {
@@ -73,26 +89,11 @@ export async function getPlaylistsFromDatabase(userId: string): Promise<database
                 return {
                     weeklyPlaylists: user.weeklyPlaylists,
                     monthlyPlaylists: user.monthlyPlaylists
-                }
+                } as databasePlaylistReturn;
             }
-        }).catch(err => {
+        }).catch((err) => {
             logger.error(`Failed to get user from database: ${err.message}`);
             throw err;
         });
 }
-
-/**
- * Check if user
- * @param {String} ID
- */
-async function getUser(ID: string) {
-    return await MovieSchema.findOne({ userId: ID })
-        .then((user) => {
-            return user;
-        }).catch((err) => {
-            logger.error(err);
-            throw new Error();
-        });
-}
-
 

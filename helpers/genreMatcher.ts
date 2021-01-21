@@ -1,19 +1,3 @@
-export async function listMatcher(movieGenres: number[] | string[] | undefined): Promise<string> {
-    if (!movieGenres) {
-        return '';
-    }
-    const genres: string[] = movieGenres.toString().split(",");
-    return genreMatcher(genres);
-}
-
-function genreMatcher(genres: string[]): string {
-    let returnGenres = '';
-    for (const genre of genres) {
-        returnGenres += movieGenreOBJ[genre] ? (returnGenres.length === 0) ? `${movieGenreOBJ[genre]}` : `, ${movieGenreOBJ[genre]}` : null;
-    }
-    return returnGenres;
-}
-
 const movieGenreOBJ: movieobj = {
     '37': 'Western',
     '28': 'Action',
@@ -34,8 +18,38 @@ const movieGenreOBJ: movieobj = {
     '10770': 'TV Movie',
     '53': 'Thriller',
     '10752': 'War'
-}
+};
 
 interface movieobj {
     [key: string]: string
 }
+
+function genreMatcher(genres: string[]) {
+    let returnGenres = '';
+    for (const genre of genres) {
+        returnGenres += movieGenreOBJ[genre] ? (returnGenres.length === 0) ? `${movieGenreOBJ[genre]}` : `, ${movieGenreOBJ[genre]}` : null;
+    }
+    return returnGenres;
+}
+
+export async function listMatcher(movieGenres: number[] | string[] | undefined): Promise<string> {
+    if (!movieGenres) {
+        return '';
+    }
+    const genres: string[] = movieGenres.toString().split(",");
+    return genreMatcher(genres);
+}
+
+export async function stringMatcher(movieGenres: String) {
+    if (!movieGenres) {
+        return 'All Genres'
+    };
+    console.log(movieGenres);
+    const genres: string[] = movieGenres.split(",");
+    console.log('passed');
+    return genreMatcher(genres);
+
+}
+
+
+

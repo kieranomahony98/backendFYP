@@ -21,6 +21,7 @@ router.post('/movieGeneration', movieAuth, (req, res) => {
                         logger.info(`Movie successfully wrote to DB`);
                     }).catch((err) => {
                         logger.error(`Failed to write movies to DB: ${err.message}`);
+                        return res.status(404).send("Error getting movies");
                     });
             };
             res.send(JSON.stringify(formattedMovies));
@@ -51,13 +52,13 @@ router.post('/returnMovies', movieAuth, (req, res) => {
 router.post('/getPlaylists', movieAuth, (req, res) => {
     const id = (req.body.user) ? req.body.user.id : null;
     if (!id) {
-        return res.status(401).send("Please log in to see your playlists")
+        return res.status(401).send("Please log in to see your playlists");
     }
     getPlaylistsFromDatabase(id)
         .then((playlists) => {
             return res.send(JSON.stringify(playlists));
         })
-        .catch(err => {
+        .catch((err) => {
             logger.error(`Failed to get playlists ${err.message}`);
             res.status(404).send('Failed to get user movies from database');
         });
