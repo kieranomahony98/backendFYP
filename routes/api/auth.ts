@@ -50,13 +50,11 @@ router.post('/register', (req, res) => {
         return res.status(400).send("Please enter all fields");
     }
 
-    UserSchema.findOne({ email })
-        .then((user) => {
-            if (user) {
-                return res.json({ msg: 'this user already exists' });
-            }
-        });
-
+    const user = UserSchema.findOne({ email })
+        .then((user) => user);
+    if (user) {
+        return res.status(409).send('This email is already registered');
+    }
     const newUser = new UserSchema({
         name,
         email,
@@ -64,11 +62,11 @@ router.post('/register', (req, res) => {
     });
     bcrypt.genSalt(10, async (err, salt) => {
         if (err) {
-            throw new Error();
+            throw err;
         }
         bcrypt.hash(password, salt, (err, hash) => {
             if (err) {
-                throw new Error();
+                throw err;
             }
             newUser.password = hash;
             newUser.save()
@@ -90,7 +88,8 @@ router.post('/register', (req, res) => {
                             });
                         });
                 }).catch((err) => {
-                    logger.error(err);
+                    logger.error(`failed to save user${err.message}`);
+                    throw err;
                 });
         });
     });

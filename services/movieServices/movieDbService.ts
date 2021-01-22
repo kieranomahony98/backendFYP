@@ -87,12 +87,13 @@ export async function getPlaylistsFromDatabase(userId: string): Promise<database
         .then((user) => {
             if (user) {
                 return {
-                    weeklyPlaylists: user.weeklyPlaylists,
-                    monthlyPlaylists: user.monthlyPlaylists
+                    weeklyPlaylists: user.userPlaylists.weeklyPlaylists,
+                    monthlyPlaylists: user.userPlaylists.monthlyPlaylists,
+                    allTimePlaylists: user.userPlaylists.allTimePlaylists
                 } as databasePlaylistReturn;
             }
         }).catch((err) => {
-            logger.error(`Failed to get user from database: ${err.message}`);
+            logger.error(`Failed to get playlists from database: ${err.message}`);
             throw err;
         });
 }
