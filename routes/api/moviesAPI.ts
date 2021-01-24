@@ -12,7 +12,6 @@ const router = express.Router();
  * @Desc retrieve user input and filter movies
  */
 router.post('/movieGeneration', movieAuth, (req, res) => {
-    console.log(req.body.MovieGenerationModel);
     const id = (req.body.user) ? req.body.user.id : null;
     returnMovies((req.body.MovieGenerationModel))
         .then((formattedMovies) => {
