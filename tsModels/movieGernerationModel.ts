@@ -52,6 +52,10 @@ export interface MovieResult {
     video?: boolean;
     vote_average?: number;
 }
+export interface discoverMovies {
+    movieResults: MovieResult[],
+    movieSearchCriteria: movieSearchCriteriaModel
+}
 export interface movieObject {
     movieId: number | undefined,
     movieTitle: string | undefined,
@@ -65,6 +69,7 @@ export interface movieObject {
 export interface singleGenerationObject {
     movieGenerationDate: string
     movieSearchCriteria: movieSearchCriteriaModel,
+    newMovieCriteria: movieSearchCriteriaModel,
     movies: movieObject[],
 }
 
@@ -73,16 +78,12 @@ export interface movieGenerationModel extends mongoose.Document {
     userMovies: singleGenerationObject[],
     weeklyPlaylists: singleGenerationObject,
     monthlyPlaylists: singleGenerationObject,
-    userPlaylists: {
-        weeklyPlaylists: singleGenerationObject,
-        monthlyPlaylists: singleGenerationObject,
-        allTimePlaylists: singleGenerationObject
-    }
+    userPlaylists: databasePlaylistReturn
 }
 
 export interface databasePlaylistReturn {
     weeklyPlaylists: singleGenerationObject,
     monthlyPlaylists: singleGenerationObject,
-    allTimePlaylists: singleGenerationObject
+    allTimePlaylists: singleGenerationObject,
 }
 

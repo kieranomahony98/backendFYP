@@ -1,5 +1,4 @@
 import express from 'express';
-import bodyParser from 'body-parser';
 import apiUserRoutes from './routes/api/usersAPI';
 import apiMovieRoutes from './routes/api/moviesAPI';
 import apiAuthRoutes from './routes/api/auth';

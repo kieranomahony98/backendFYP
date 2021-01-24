@@ -3,7 +3,10 @@ import { MovieDb } from 'moviedb-promise';
 import { logger } from '../../helpers/logger';
 import config from 'config';
 import { listMatcher } from '../../helpers/genreMatcher';
-import { movieObject, movieSearchCriteriaModel, singleGenerationObject, MovieResult } from '../../tsModels/movieGernerationModel';
+import { movieObject, movieSearchCriteriaModel, singleGenerationObject, MovieResult, discoverMovies } from '../../tsModels/movieGernerationModel';
+import { convertToTextGeneration } from '../../helpers/convertToText';
+import { revisedQuery } from '../../helpers/revisedQuery';
+
 
 export const moviedb = new MovieDb(config.get('TMDB3'));
 
@@ -11,26 +14,35 @@ export const moviedb = new MovieDb(config.get('TMDB3'));
  * @Desc function returns list of movies from api
  * @param {object} movieSearchCriteria object of the user input
  */
-export async function getMovies(movieSearchCriteria: movieSearchCriteriaModel): Promise<MovieResult[] | undefined> {
-    return await moviedb.discoverMovie(movieSearchCriteria)
+export async function getMovies(movieSearchCriteria: movieSearchCriteriaModel): Promise<discoverMovies> {
+    const movieResults = await moviedb.discoverMovie(movieSearchCriteria)
         .then((movies) => {
             return movies.results;
         }).catch((err) => {
             logger.error(`${err} in getting Movies`);
             throw new Error();
         });
+    if (movieResults && movieResults.length === 0) {
+        return await getMovies(await revisedQuery(movieSearchCriteria));
+    }
+
+    return {
+        movieResults,
+        movieSearchCriteria,
+    } as discoverMovies;
+
 }
 
 /**
  * desc: function filters the movies
- * @param {Object} allMovies JSON from api with list of movies
+ * @param {Object} movieResults JSON from api with list of movies
  * @param {movieSearchCriteriaModel} movieSearchCriteria object of the user input
  */
 
-export async function filterMovies(allMovies: any, movieSearchCriteria: movieSearchCriteriaModel): Promise<singleGenerationObject> {
+export async function filterMovies({ movieResults, movieSearchCriteria }: discoverMovies): Promise<singleGenerationObject> {
     let filteredMoves: MovieResult[] = [];
     try {
-        filteredMoves = allMovies.filter((movie: any, index: number) => {
+        filteredMoves = movieResults.filter((movie: any, index: number) => {
             return index <= 8;
         });
     } catch (err) {
@@ -51,9 +63,11 @@ export async function filterMovies(allMovies: any, movieSearchCriteria: movieSea
                 movieImagePath: movie.poster_path
             });
         }));
+        const newMovieCriteria = await convertToTextGeneration(movieSearchCriteria);
         return {
             movieGenerationDate: new Date().toISOString(),
-            movieSearchCriteria: movieSearchCriteria,
+            movieSearchCriteria: newMovieCriteria,
+            newMovieCriteria,
             movies
         } as singleGenerationObject;
 
@@ -86,7 +100,7 @@ export function returnMovieGenerationObject(): movieObject {
 export async function returnMovies(movieSearchCriteria: movieSearchCriteriaModel): Promise<singleGenerationObject> {
     return (
         getMovies(movieSearchCriteria))
-        .then((movies) => filterMovies(movies, movieSearchCriteria))
+        .then((movies) => filterMovies(movies))
         .then((filteredMovies) => filteredMovies)
         .catch((err) => {
             logger.error(`Failed to return movies ${err} `);

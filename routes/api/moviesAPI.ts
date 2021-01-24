@@ -13,7 +13,7 @@ const router = express.Router();
  */
 router.post('/movieGeneration', movieAuth, (req, res) => {
     const id = (req.body.user) ? req.body.user.id : null;
-    returnMovies(JSON.parse(JSON.stringify(req.body.MovieGenerationModel)))
+    returnMovies((req.body.MovieGenerationModel))
         .then((formattedMovies) => {
             if (id) {
                 writeToDatabase(formattedMovies, id)
@@ -21,10 +21,11 @@ router.post('/movieGeneration', movieAuth, (req, res) => {
                         logger.info(`Movie successfully wrote to DB`);
                     }).catch((err) => {
                         logger.error(`Failed to write movies to DB: ${err.message}`);
-                        return res.status(404).send("Error getting movies");
+                        throw err;
                     });
             };
-            res.send(JSON.stringify(formattedMovies));
+            const returnObj = (req.body.MovieGenerationModel !== formattedMovies.movieSearchCriteria) ? { formattedMovies, isRevised: true } : { formattedMovies, isRevised: false };
+            res.send(JSON.stringify(returnObj));
         }).catch((err) => {
             logger.error(`${err} error in api`);
             return res.status(404).send("Error getting movies");

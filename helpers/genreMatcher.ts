@@ -44,9 +44,7 @@ export async function stringMatcher(movieGenres: String) {
     if (!movieGenres) {
         return 'All Genres'
     };
-    console.log(movieGenres);
     const genres: string[] = movieGenres.split(",");
-    console.log('passed');
     return genreMatcher(genres);
 
 }

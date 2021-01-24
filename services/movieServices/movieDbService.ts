@@ -1,8 +1,10 @@
 import MovieSchema from '../../MongoModels/movieModel';
 import { logger } from '../../helpers/logger';
 import { movieGenerationModel, singleGenerationObject, databasePlaylistReturn } from '../../tsModels/movieGernerationModel';
-import { stringMatcher } from '../../helpers/genreMatcher';
+import { listMatcher, stringMatcher } from '../../helpers/genreMatcher';
 import { moviedb } from './discoverMoviesService';
+import { keywordController } from '../../helpers/keywordsHelper';
+import { convertToText } from '../../helpers/convertToText';
 /**
  * Check if user
  * @param {String} ID
@@ -61,7 +63,6 @@ export async function writeToDatabase(userMovies: singleGenerationObject, userId
  * @param {String} userId
  */
 export async function getMoviesFromDatabase(userId: string): Promise<singleGenerationObject[] | null> {
-
     const user = await getUser(userId)
         .then((user) => user)
         .catch((err) => {
@@ -83,18 +84,24 @@ export async function getMoviesFromDatabase(userId: string): Promise<singleGener
 }
 
 export async function getPlaylistsFromDatabase(userId: string): Promise<databasePlaylistReturn | undefined> {
-    return await getUser(userId)
+    return getUser(userId)
         .then((user) => {
             if (user) {
-                return {
-                    weeklyPlaylists: user.userPlaylists.weeklyPlaylists,
-                    monthlyPlaylists: user.userPlaylists.monthlyPlaylists,
-                    allTimePlaylists: user.userPlaylists.allTimePlaylists
-                } as databasePlaylistReturn;
+                const genres = [convertToText(user.userPlaylists.weeklyPlaylists), convertToText(user.userPlaylists.monthlyPlaylists), convertToText(user.userPlaylists.allTimePlaylists)];
+                return Promise.all(genres)
+                    .then((playlists) => {
+                        return {
+                            weeklyPlaylists: playlists[0],
+                            monthlyPlaylists: playlists[1],
+                            allTimePlaylists: playlists[2]
+                        } as databasePlaylistReturn;
+                    });
             }
         }).catch((err) => {
             logger.error(`Failed to get playlists from database: ${err.message}`);
             throw err;
         });
 }
+
+
 
