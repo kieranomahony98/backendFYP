@@ -17,7 +17,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.listen(process.env.PORT, () => {
-    logger.info(`app is listening to port ${config.get('PORT')}`);
+    logger.info(`app is listening to port ${process.env.PORT}`);
 });
 
 // config mongodb
