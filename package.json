@@ -5,8 +5,9 @@
   "main": "index.ts",
   "scripts": {
     "test": "NODE_ENV= jest --coverage",
-    "build": "tsc",
-    "start": "ts-node server.ts"
+    "build": "rm-rf dist && tsc",
+    "start": "node dist/server.js",
+    "dev": "ts-node server.ts"
   },
   "keywords": [],
   "author": "",
