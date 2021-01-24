@@ -7,7 +7,7 @@
     "test": "NODE_ENV= jest --coverage",
     "build": "tsc",
     "start": "node dist/server.js",
-    "dev": "ts-node server.ts"
+    "local": "ts-node server.ts"
   },
   "keywords": [],
   "author": "",

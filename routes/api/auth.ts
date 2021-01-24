@@ -51,48 +51,54 @@ router.post('/register', (req, res) => {
     }
 
     const user = UserSchema.findOne({ email })
-        .then((user) => user);
-    if (user) {
-        return res.status(409).send('This email is already registered');
-    }
-    const newUser = new UserSchema({
-        name,
-        email,
-        password
-    });
-    bcrypt.genSalt(10, async (err, salt) => {
-        if (err) {
-            throw err;
-        }
-        bcrypt.hash(password, salt, (err, hash) => {
-            if (err) {
-                throw err;
+        .then((user) => {
+            if (user) {
+                return res.status(409).send('This email is already registered');
             }
-            newUser.password = hash;
-            newUser.save()
-                .then((user) => {
-                    jwt.sign(
-                        { id: user._id },
-                        config.get('jwtSecret'),
-                        { expiresIn: 3600 * 6 },
-                        (err, token) => {
-                            if (err) {
-                                throw err;
-                            }
-                            res.json({
-                                token,
-                                user: {
-                                    name: user.name,
-                                    email: user.email
-                                }
-                            });
-                        });
-                }).catch((err) => {
-                    logger.error(`failed to save user${err.message}`);
+            const newUser = new UserSchema({
+                name,
+                email,
+                password
+            });
+            bcrypt.genSalt(10, async (err, salt) => {
+                if (err) {
                     throw err;
+                }
+                bcrypt.hash(password, salt, (err, hash) => {
+                    if (err) {
+                        throw err;
+                    }
+                    newUser.password = hash;
+                    newUser.save()
+                        .then((user) => {
+                            jwt.sign(
+                                { id: user._id },
+                                config.get('jwtSecret'),
+                                { expiresIn: 3600 * 6 },
+                                (err, token) => {
+                                    if (err) {
+                                        throw err;
+                                    }
+                                    res.json({
+                                        token,
+                                        user: {
+                                            name: user.name,
+                                            email: user.email
+                                        }
+                                    });
+                                });
+                        }).catch((err) => {
+                            logger.error(`failed to save user${err.message}`);
+                            throw err;
+                        });
                 });
-        });
-    });
+            });
+        }).catch((err) => {
+            logger.error(`Failed to register user: ${err.message}`);
+            return res.status(500).send('Sorry, that didnt go through :(');
+        })
+    console.log(user);
+
 });
 
 
