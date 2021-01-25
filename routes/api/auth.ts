@@ -2,14 +2,16 @@ import UserSchema from '../../MongoModels/userModel';
 import { logger } from '../../helpers/logger';
 import express from 'express';
 import bcrypt from 'bcryptjs';
-import config from 'config';
 import jwt from 'jsonwebtoken';
 import { auth } from '../../middleware/auth';
+import dotenv from 'dotenv';
+dotenv.config();
 const router = express.Router();
 
 //@route
 router.post('/login', (req, res) => {
     const { email, password } = req.body;
+    const jwtSecret = process.env.jwtSecret ? process.env.jwtSecret : '';
     return UserSchema.findOne({ email })
         .then((user) => {
             if (!user) {
@@ -23,7 +25,7 @@ router.post('/login', (req, res) => {
                     }
                     jwt.sign(
                         { id: user._id },
-                        config.get('jwtSecret'),
+                        jwtSecret,
                         { expiresIn: 3600 * 6 },
                         (err, token) => {
                             if (err) {
@@ -49,6 +51,7 @@ router.post('/register', (req, res) => {
     if (!name || !email || !password) {
         return res.status(400).send("Please enter all fields");
     }
+    const jwtSecret = process.env.jwtSecret ? process.env.jwtSecret : '';
 
     const user = UserSchema.findOne({ email })
         .then((user) => {
@@ -73,7 +76,7 @@ router.post('/register', (req, res) => {
                         .then((user) => {
                             jwt.sign(
                                 { id: user._id },
-                                config.get('jwtSecret'),
+                                jwtSecret,
                                 { expiresIn: 3600 * 6 },
                                 (err, token) => {
                                     if (err) {

@@ -6,7 +6,8 @@ import mongoose from 'mongoose';
 import { logger } from './helpers/logger';
 import cors from 'cors';
 import helmet from 'helmet';
-import config from 'config';
+import dotenv from 'dotenv'
+dotenv.config();
 const app = express();
 
 
@@ -21,7 +22,7 @@ app.listen(process.env.PORT, () => {
 });
 
 // config mongodb
-const db: string = config.get('MONGO_URI');
+const db = (process.env.MONGO_URI) ? process.env.MONGO_URI : '';
 // connect to db
 mongoose.connect(db, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => {

@@ -4,11 +4,11 @@ import { logger } from '../../helpers/logger';
 import config from 'config';
 import { listMatcher } from '../../helpers/genreMatcher';
 import { movieObject, movieSearchCriteriaModel, singleGenerationObject, MovieResult, discoverMovies } from '../../tsModels/movieGernerationModel';
-import { convertToTextGeneration } from '../../helpers/convertToText';
 import { revisedQuery } from '../../helpers/revisedQuery';
-
-
-export const moviedb = new MovieDb(config.get('TMDB3'));
+import dotenv from 'dotenv'
+dotenv.config();
+const movieDbURI = (process.env.TMDB3) ? process.env.TMDB3 : '';
+export const moviedb = new MovieDb(movieDbURI);
 
 /**
  * @Desc function returns list of movies from api
@@ -20,12 +20,11 @@ export async function getMovies(movieSearchCriteria: movieSearchCriteriaModel): 
             return movies.results;
         }).catch((err) => {
             logger.error(`${err} in getting Movies`);
-            throw new Error();
+            throw err;
         });
     if (movieResults && movieResults.length === 0) {
         return await getMovies(await revisedQuery(movieSearchCriteria));
     }
-
     return {
         movieResults,
         movieSearchCriteria,
@@ -52,7 +51,7 @@ export async function filterMovies({ movieResults, movieSearchCriteria }: discov
 
     try {
         const movies = await Promise.all(filteredMoves.map(async (movie) => {
-            const genres = await listMatcher(movie.genre_ids);
+            const genres: string = await listMatcher(movie.genre_ids)
             return ({
                 movieId: movie.id,
                 movieTitle: movie.title,
@@ -63,17 +62,15 @@ export async function filterMovies({ movieResults, movieSearchCriteria }: discov
                 movieImagePath: movie.poster_path
             });
         }));
-        const newMovieCriteria = await convertToTextGeneration(movieSearchCriteria);
         return {
             movieGenerationDate: new Date().toISOString(),
-            movieSearchCriteria: newMovieCriteria,
-            newMovieCriteria,
+            movieSearchCriteria,
             movies
         } as singleGenerationObject;
 
     } catch (err) {
         logger.error(`Failed to format movies ${err}`);
-        throw new Error();
+        throw err;
     }
 }
 
@@ -104,7 +101,7 @@ export async function returnMovies(movieSearchCriteria: movieSearchCriteriaModel
         .then((filteredMovies) => filteredMovies)
         .catch((err) => {
             logger.error(`Failed to return movies ${err} `);
-            throw new Error();
+            throw err;
         });
 }
 

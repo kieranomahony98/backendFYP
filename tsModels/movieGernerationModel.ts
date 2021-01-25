@@ -61,7 +61,7 @@ export interface movieObject {
     movieTitle: string | undefined,
     movieDescription: string | undefined,
     movieReleaseYear: string | undefined,
-    movieGenres: string | undefined | string[],
+    movieGenres: string | undefined,
     moviePopularity: string | undefined,
     movieImagePath: string | undefined
 }

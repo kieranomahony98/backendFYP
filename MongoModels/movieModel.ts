@@ -17,7 +17,7 @@ const MovieSchema = new Schema({
                     required: false,
                 },
                 with_genres: {
-                    type: Array,
+                    type: String,
                     required: false,
                 },
                 primary_release_year: {
