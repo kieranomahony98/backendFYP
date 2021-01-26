@@ -1,10 +1,8 @@
 import express, { Request, Response } from 'express';
 import { logger } from '../../helpers/logger';
-import bcrypt from 'bcryptjs';
 import { auth } from '../../middleware/auth';
 import UserSchema from '../../MongoModels/userModel';
-import config from 'config';
-import jwt from 'jsonwebtoken';
+
 
 
 const router = express.Router();

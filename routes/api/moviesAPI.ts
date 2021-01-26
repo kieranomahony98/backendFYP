@@ -1,7 +1,7 @@
 import express from 'express';
 import { logger } from '../../helpers/logger';
 import { returnMovies } from '../../services/movieServices/discoverMoviesService';
-import { writeToDatabase, getMoviesFromDatabase, getPlaylistsFromDatabase } from '../../services/movieServices/movieDbService';
+import { writeToDatabase, getMoviesFromDatabase, getPlaylistsFromDatabase } from '../../services/dbServices/movieDbService';
 import { movieAuth } from '../../middleware/auth';
 
 // eslint-disable-next-line new-cap
