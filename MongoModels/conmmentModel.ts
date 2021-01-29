@@ -1,25 +1,35 @@
 import mongoose from 'mongoose';
-import { userModel } from '../tsModels/userModel';
+import { comment } from '../tsModels/commentModels';
 const Schema = mongoose.Schema;
 
 // Create Schema
-const UserSchema = new Schema({
-    name: {
+const CommentSchema = new Schema({
+    movieId: {
         type: String,
-        required: true,
+        required: true
     },
-    email: {
+    depth: {
+        type: Number,
+        default: 1
+    },
+    parentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        default: null
+    },
+    postedDate: {
         type: String,
-        required: true,
+        default: new Date().toISOString()
     },
-    password: {
+    user: {
+        userId: mongoose.Schema.Types.ObjectId,
+        userName: String
+    },
+    commentText: {
         type: String,
-        required: true,
-    },
-    date: {
-        type: Date,
-        default: Date.now,
-    },
+        required: true
+    }
 });
+export default mongoose.model('comments', CommentSchema);
 
-export default mongoose.model<userModel>('users', UserSchema);
+
+

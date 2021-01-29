@@ -34,6 +34,7 @@ router.post('/login', (req, res) => {
                             res.json({
                                 token,
                                 user: {
+                                    id: user._id,
                                     name: user.name,
                                     email: user.email
                                 }
@@ -85,6 +86,7 @@ router.post('/register', (req, res) => {
                                     res.json({
                                         token,
                                         user: {
+                                            id: user._id,
                                             name: user.name,
                                             email: user.email
                                         }
