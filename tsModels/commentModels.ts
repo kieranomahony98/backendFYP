@@ -38,5 +38,7 @@ export interface tsCommentSchema {
         userName: string
     },
     depth?: Number,
-    commentText?: string
+    commentText?: string,
+    commentDownVotes: Number,
+    commentUpVotes: Number
 }

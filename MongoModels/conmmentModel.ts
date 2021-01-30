@@ -27,6 +27,14 @@ const CommentSchema = new Schema({
     commentText: {
         type: String,
         required: true
+    },
+    commentUpVotes: {
+        type: Number,
+        default: 0
+    },
+    commentDownVotes: {
+        type: Number,
+        default: 0
     }
 });
 export default mongoose.model('comments', CommentSchema);

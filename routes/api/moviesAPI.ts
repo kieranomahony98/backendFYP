@@ -3,7 +3,7 @@ import { logger } from '../../helpers/logger';
 import { returnMovies } from '../../services/movieServices/discoverMoviesService';
 import { writeToDatabase, getMoviesFromDatabase, getPlaylistsFromDatabase } from '../../services/dbServices/movieDbService';
 import { movieAuth } from '../../middleware/auth';
-import { addComment, updateSingleComment, getCommentsForPost } from '../../services/commentServices/commentService'
+import { addComment, updateSingleComment, getCommentsForPost, deleteComment, setDownvotes, setUpvotes } from '../../services/commentServices/commentService'
 // eslint-disable-next-line new-cap
 const router = express.Router();
 
@@ -78,7 +78,6 @@ router.post('/getPlaylists', movieAuth, (req, res) => {
  * @Desc adds comment to database
  */
 router.post('/comments/addComments', movieAuth, (req, res) => {
-
     addComment(req.body)
         .then((commentAdded) => {
             res.send(commentAdded);
@@ -95,18 +94,66 @@ router.post('/comments/addComments', movieAuth, (req, res) => {
  * @Desc adds comment to database
  */
 router.get('/comments/getComments/:postId', (req, res) => {
-    console.log(req.params.postId)
     getCommentsForPost(req.params.postId)
         .then((comments) => {
-            console.log(comments);
+            res.send(comments)
+        }).catch((err) => {
+            logger.error(`Failed to get comments: ${err.message}`);
+            res.status(500).send('Failed to get comments for this post');
+        });
+});
+
+/**
+ * @Route /api/movies/comments/update
+ * @param postId: id of post to query in db
+ * @Desc adds comment to database
+ */
+router.post('/comments/update', movieAuth, (req, res) => {
+    const { commentText, commentId } = req.body;
+    console.log(commentText, commentId);
+    updateSingleComment(commentId, commentText)
+        .then((comments) => {
             res.send(comments)
         }).catch((err) => {
             logger.error(`Failed to get comments: ${err.message}`);
             res.status(500).send('Failed to get comments for this post');
 
         })
-})
+});
 
+router.get('/comments/delete/:commentId', movieAuth, (req, res) => {
+    console.log(req.params.commentId);
+    deleteComment(req.params.commentId)
+        .then((result) => {
+            res.send(result);
+        })
+        .catch((err) => {
+            logger.error(`failed to delete comment: ${err.message}`);
+            res.status(500).send('Failed to delete comment, try again later');
+        })
+});
+
+router.get('/comments/increase/score/:commentId/:commentScore', movieAuth, (req, res) => {
+    setUpvotes(req.params.commentId, parseInt(req.params.commentScore))
+        .then((comment) => {
+            res.send(comment);
+        })
+        .catch((err) => {
+            logger.error(`failed to increase comment score: ${err.message}`);
+            res.status(500).send(`Failed to incrase score`);
+        })
+});
+
+router.get('/comments/decrease/score/:commentId/:commentScore', movieAuth, (req, res) => {
+    setDownvotes(req.params.commentId, parseInt(req.params.commentScore))
+        .then((comment) => {
+            res.send(comment);
+        })
+        .catch((err) => {
+            logger.error(`failed to decrease comment score: ${err.message}`);
+            res.status(500).send(`Failed to decrase score`);
+        })
+});
 // router.post('/comments/updateComment', movieAuth, (req, res) => {
 //     updateSingleComment()
 // })
