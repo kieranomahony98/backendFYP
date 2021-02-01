@@ -1,11 +1,13 @@
-import { userComment, userCommentObj, structureCommentReturn, tsCommentSchema } from '../../tsModels/commentModels';
+import { tsCommentSchema } from '../../tsModels/commentModels';
 import CommentSchema from '../../MongoModels/conmmentModel';
 import { logger } from '../../helpers/logger';
 import { checkIfDiscussionExists, createDiscussion } from '../dbServices/discussionDbservice';
 import { movieObject } from '../../tsModels/movieGernerationModel';
 export async function updateSingleComment(_id: string, commentText: string) {
-    if (!_id || !commentText) return false;
-    CommentSchema.updateOne({ _id }, { $set: { commentText: commentText } })
+    if (!_id || !commentText) {
+        return false;
+    }
+    CommentSchema.updateOne({ _id }, { $set: { commentText } })
         .then((commentWrote) => true)
         .catch((err) => {
             logger.error(`Failed to update comment: ${err.message}`);
@@ -25,7 +27,7 @@ export async function addComment(commentData: any) {
             commentDownVotes: 0,
             commentUpVotes: 0,
             isDeleted: false
-        }
+        };
 
         commentObj.depth = (commentData.depth) ? commentData.depth : 1;
         commentObj.parentId = (commentData.parentId) ? commentData.parentId : null;
@@ -55,13 +57,13 @@ export async function getCommentsForPost(movie: movieObject) {
             .catch((err) => {
                 logger.error(`Failed to create discussion: ${err.message}`);
                 throw err;
-            })
+            });
     }
 
     return await CommentSchema.find({ movieId: movie.movieId }).lean().exec()
         .then((commentsForMovie) => {
             let rec = (comment: any, threads: any) => {
-                for (let thread in threads) {
+                for (const thread in threads) {
                     const value = threads[thread];
 
                     if (thread.toString() === comment.parentId.toString()) {
@@ -69,7 +71,7 @@ export async function getCommentsForPost(movie: movieObject) {
                         return;
                     }
                     if (value.children) {
-                        rec(comment, value.children)
+                        rec(comment, value.children);
                     }
                 }
             }
@@ -80,7 +82,7 @@ export async function getCommentsForPost(movie: movieObject) {
                 comment['children'] = {};
                 let parentId = comment.parentId;
                 if (!parentId) {
-                    threads[comment._id] = comment
+                    threads[comment._id] = comment;
                     continue;
                 }
                 rec(comment, threads);
@@ -109,7 +111,6 @@ export async function deleteComment(_id: string) {
 export async function setScore(_id: string, commentScore: Number) {
     CommentSchema.findOneAndUpdate({ _id }, { $set: { commentScore } })
         .then((newScore) => {
-            console.log(newScore);
             return newScore;
         })
         .catch((err) => {

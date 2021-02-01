@@ -3,7 +3,7 @@ import { logger } from '../../helpers/logger';
 import { returnMovies } from '../../services/movieServices/discoverMoviesService';
 import { writeToDatabase, getMoviesFromDatabase, getPlaylistsFromDatabase } from '../../services/dbServices/movieDbService';
 import { movieAuth } from '../../middleware/auth';
-import { addComment, updateSingleComment, getCommentsForPost, deleteComment, setScore } from '../../services/commentServices/commentService'
+import { addComment, updateSingleComment, getCommentsForPost, deleteComment, setScore } from '../../services/commentServices/commentService';
 import { getAllDiscussions } from '../../services/dbServices/discussionDbservice';
 // eslint-disable-next-line new-cap
 const router = express.Router();
@@ -86,7 +86,7 @@ router.post('/comments/addComments', movieAuth, (req, res) => {
         .catch((err) => {
             logger.error(`Failed to add comment: ${err.message}`);
             res.status(500).send('Sorry, but youre comment could not be added right now, please try again later');
-        })
+        });
 });
 
 /**
@@ -111,10 +111,9 @@ router.post('/comments/getComments', (req, res) => {
  */
 router.post('/comments/update', movieAuth, (req, res) => {
     const { commentText, commentId } = req.body;
-    console.log(commentText, commentId);
     updateSingleComment(commentId, commentText)
         .then((comments) => {
-            res.send(comments)
+            res.send(comments);
         }).catch((err) => {
             logger.error(`Failed to get comments: ${err.message}`);
             res.status(500).send('Failed to get comments for this post');
@@ -127,7 +126,6 @@ router.post('/comments/update', movieAuth, (req, res) => {
  * @Desc deletes comment to database
  */
 router.get('/comments/delete/:commentId', movieAuth, (req, res) => {
-    console.log(req.params.commentId);
     deleteComment(req.params.commentId)
         .then((result) => {
             res.send(result);
@@ -144,8 +142,6 @@ router.get('/comments/delete/:commentId', movieAuth, (req, res) => {
  * @Desc adds comment to database
  */
 router.get('/comments/increase/score/:commentId/:commentScore', movieAuth, (req, res) => {
-    console.log(req.params.commentScores);
-
     setScore(req.params.commentId, parseInt(req.params.commentScore))
         .then((comment) => {
             res.send(comment);

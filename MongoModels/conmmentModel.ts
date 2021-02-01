@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import { comment } from '../tsModels/commentModels';
 const Schema = mongoose.Schema;
 
 // Create Schema
