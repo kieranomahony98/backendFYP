@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import {userModel} from '../tsModels/userModel';
+import { userModel } from '../tsModels/userModel';
 const Schema = mongoose.Schema;
 
 // Create Schema
@@ -16,10 +16,15 @@ const UserSchema = new Schema({
         type: String,
         required: true,
     },
+    userName: {
+        type: String,
+        required: true
+    },
     date: {
         type: Date,
         default: Date.now,
     },
+
 });
 
 export default mongoose.model<userModel>('users', UserSchema);

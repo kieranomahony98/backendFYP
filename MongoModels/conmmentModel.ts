@@ -28,14 +28,15 @@ const CommentSchema = new Schema({
         type: String,
         required: true
     },
-    commentUpVotes: {
+    commentScore: {
         type: Number,
         default: 0
     },
-    commentDownVotes: {
-        type: Number,
-        default: 0
+    isDeleted: {
+        type: Boolean,
+        default: false
     }
+
 });
 export default mongoose.model('comments', CommentSchema);
 

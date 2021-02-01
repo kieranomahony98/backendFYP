@@ -1,7 +1,8 @@
 import { userComment, userCommentObj, structureCommentReturn, tsCommentSchema } from '../../tsModels/commentModels';
 import CommentSchema from '../../MongoModels/conmmentModel';
 import { logger } from '../../helpers/logger';
-
+import { checkIfDiscussionExists, createDiscussion } from '../dbServices/discussionDbservice';
+import { movieObject } from '../../tsModels/movieGernerationModel';
 export async function updateSingleComment(_id: string, commentText: string) {
     if (!_id || !commentText) return false;
     CommentSchema.updateOne({ _id }, { $set: { commentText: commentText } })
@@ -13,7 +14,6 @@ export async function updateSingleComment(_id: string, commentText: string) {
 }
 
 export async function addComment(commentData: any) {
-    console.log(JSON.stringify(commentData));
     try {
         let commentObj: tsCommentSchema = {
             movieId: commentData.movieId,
@@ -23,7 +23,8 @@ export async function addComment(commentData: any) {
             },
             commentText: commentData.commentText,
             commentDownVotes: 0,
-            commentUpVotes: 0
+            commentUpVotes: 0,
+            isDeleted: false
         }
 
         commentObj.depth = (commentData.depth) ? commentData.depth : 1;
@@ -41,8 +42,23 @@ export async function addComment(commentData: any) {
     }
 }
 
-export async function getCommentsForPost(movieId: string) {
-    return await CommentSchema.find({ movieId }).lean().exec()
+export async function getCommentsForPost(movie: movieObject) {
+    const isDiscussion = await checkIfDiscussionExists(movie.movieId)
+        .then((bool) => bool)
+        .catch((err) => {
+            logger.error(`Failed to check if discussion exists: ${err.message}`);
+            throw err;
+        });
+    if (!isDiscussion) {
+        createDiscussion(movie)
+            .then((discussion) => discussion)
+            .catch((err) => {
+                logger.error(`Failed to create discussion: ${err.message}`);
+                throw err;
+            })
+    }
+
+    return await CommentSchema.find({ movieId: movie.movieId }).lean().exec()
         .then((commentsForMovie) => {
             let rec = (comment: any, threads: any) => {
                 for (let thread in threads) {
@@ -75,14 +91,14 @@ export async function getCommentsForPost(movieId: string) {
             }
         })
         .catch((err) => {
-            logger.error(`Failed to get comments for movie ${movieId}: ${err.message}`);
+            logger.error(`Failed to get comments for movie ${movie.movieId}: ${err.message}`);
             throw err;
         });
 
 }
 
 export async function deleteComment(_id: string) {
-    CommentSchema.findOneAndUpdate({ _id }, { $set: { commentText: 'This comment has been delete', 'user.userId': null, 'user.userName': 'Unknown' } })
+    CommentSchema.findOneAndUpdate({ _id }, { $set: { commentText: 'This comment has been delete', 'user.userId': null, 'user.userName': 'Unknown', isDeleted: true } })
         .then((result) => result)
         .catch((err) => {
             logger.error(`failed to delete user: ${err.message}`);
@@ -90,18 +106,12 @@ export async function deleteComment(_id: string) {
         });
 }
 
-export async function setUpvotes(_id: string, commentScore: Number) {
-    CommentSchema.findOneAndUpdate({ _id }, { $set: { commentUpvotes: commentScore } })
-        .then((newScore) => newScore)
-        .catch((err) => {
-            logger.error(`failed to increase score: ${err.message}`);
-            throw err;
-        });
-}
-
-export async function setDownvotes(_id: string, commentScore: Number) {
-    CommentSchema.findOneAndUpdate({ _id }, { $set: { commentUpvotes: commentScore } })
-        .then((newScore) => newScore)
+export async function setScore(_id: string, commentScore: Number) {
+    CommentSchema.findOneAndUpdate({ _id }, { $set: { commentScore } })
+        .then((newScore) => {
+            console.log(newScore);
+            return newScore;
+        })
         .catch((err) => {
             logger.error(`failed to increase score: ${err.message}`);
             throw err;

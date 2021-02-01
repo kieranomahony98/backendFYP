@@ -93,7 +93,6 @@ export function returnMovieGenerationObject(): movieObject {
 /**
  * @Desc returns fotmatted movies to the api
  */
-
 export async function returnMovies(movieSearchCriteria: movieSearchCriteriaModel): Promise<singleGenerationObject> {
     return (
         getMovies(movieSearchCriteria))

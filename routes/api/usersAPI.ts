@@ -1,9 +1,7 @@
 import express, { Request, Response } from 'express';
 import { logger } from '../../helpers/logger';
-import { auth, movieAuth } from '../../middleware/auth';
+import { auth } from '../../middleware/auth';
 import UserSchema from '../../MongoModels/userModel';
-
-
 
 const router = express.Router();
 

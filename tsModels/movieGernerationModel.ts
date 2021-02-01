@@ -57,7 +57,7 @@ export interface discoverMovies {
     movieSearchCriteria: movieSearchCriteriaModel
 }
 export interface movieObject {
-    movieId: number | undefined,
+    movieId: number,
     movieTitle: string | undefined,
     movieDescription: string | undefined,
     movieReleaseYear: string | undefined,

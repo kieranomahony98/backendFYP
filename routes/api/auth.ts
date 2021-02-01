@@ -35,6 +35,7 @@ router.post('/login', (req, res) => {
                                 token,
                                 user: {
                                     id: user._id,
+                                    userName: user.userName,
                                     name: user.name,
                                     email: user.email
                                 }
@@ -48,8 +49,8 @@ router.post('/login', (req, res) => {
 });
 
 router.post('/register', (req, res) => {
-    const { name, email, password } = req.body;
-    if (!name || !email || !password) {
+    const { name, email, password, userName } = req.body;
+    if (!name || !email || !password || !userName) {
         return res.status(400).send("Please enter all fields");
     }
     const jwtSecret = process.env.jwtSecret ? process.env.jwtSecret : '';
@@ -62,6 +63,7 @@ router.post('/register', (req, res) => {
             const newUser = new UserSchema({
                 name,
                 email,
+                userName,
                 password
             });
             bcrypt.genSalt(10, async (err, salt) => {
@@ -87,6 +89,7 @@ router.post('/register', (req, res) => {
                                         token,
                                         user: {
                                             id: user._id,
+                                            userName: user.userName,
                                             name: user.name,
                                             email: user.email
                                         }
