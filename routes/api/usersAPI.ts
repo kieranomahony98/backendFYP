@@ -1,11 +1,7 @@
 import express, { Request, Response } from 'express';
 import { logger } from '../../helpers/logger';
-import bcrypt from 'bcryptjs';
 import { auth } from '../../middleware/auth';
 import UserSchema from '../../MongoModels/userModel';
-import config from 'config';
-import jwt from 'jsonwebtoken';
-
 
 const router = express.Router();
 
@@ -15,12 +11,20 @@ router.post('/user', auth, (req: Request, res: Response) => {
     UserSchema.findById(id).select('-password')
         .then((user) => {
             logger.info(`user found: ${user}`);
-            res.json(user);
+            if (user) {
+                res.json({
+                    id: user._id,
+                    name: user.name,
+                    email: user.email
+                });
+            }
+
         }).catch((err) => {
             logger.error(`Failed to validate user: ${err.message}`);
             return res.status(500).send("failed to validate users");
         });
 });
+
 
 
 
