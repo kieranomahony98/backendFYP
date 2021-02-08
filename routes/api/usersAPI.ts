@@ -21,7 +21,7 @@ router.post('/user', auth, (req: Request, res: Response) => {
 
         }).catch((err) => {
             logger.error(`Failed to validate user: ${err.message}`);
-            return res.status(500).send("failed to validate users");
+            return res.status(500).json({ msg: "failed to validate users" });
         });
 });
 

@@ -1,6 +1,7 @@
 import MovieSchema from '../../MongoModels/movieModel';
 import { logger } from '../../helpers/logger';
 import { movieGenerationModel, singleGenerationObject, databasePlaylistReturn } from '../../tsModels/movieGernerationModel';
+import { json } from 'body-parser';
 /**
  * Check if user
  * @param {String} ID
@@ -88,6 +89,7 @@ export async function getPlaylistsFromDatabase(userId: string): Promise<database
             throw err;
         });
 }
+
 
 
 

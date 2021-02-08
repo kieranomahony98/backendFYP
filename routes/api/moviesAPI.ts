@@ -4,7 +4,7 @@ import { returnMovies } from '../../services/movieServices/discoverMoviesService
 import { writeToDatabase, getMoviesFromDatabase, getPlaylistsFromDatabase } from '../../services/dbServices/movieDbService';
 import { movieAuth } from '../../middleware/auth';
 import { addComment, updateSingleComment, getCommentsForPost, deleteComment, setScore } from '../../services/commentServices/commentService';
-import { getAllDiscussions } from '../../services/dbServices/discussionDbservice';
+import { checkIfDiscussionExists, createDiscussion, getAllDiscussions, getMovie } from '../../services/dbServices/discussionDbservice';
 // eslint-disable-next-line new-cap
 const router = express.Router();
 
@@ -74,6 +74,30 @@ router.post('/getPlaylists', movieAuth, (req, res) => {
         });
 });
 
+router.get('/getMovie/:movieId', (req, res) => {
+    getMovie(req.params.movieId)
+        .then((movie) => {
+            res.send(movie);
+        }).catch((err) => {
+            logger.error(`Failed to get movie from DB: ${err.message}`);
+            res.status(404).send('Failed to get movie from database');
+        });
+});
+
+router.post('/discussions/create', (req, res) => {
+    checkIfDiscussionExists(req.body.movieId)
+        .then((isThere) => {
+            if (!isThere) {
+                createDiscussion(req.body)
+                    .then((movie) => {
+                        res.send(movie);
+                    });
+            }
+        }).catch((err) => {
+            logger.error(`Failed to check if discussion exists or create one :${err.message}`);
+            res.status(500).send(`Failed to check if discussion exists or create one `);
+        })
+})
 /**
  * @Route /api/movies/comments/addComments
  * @Desc adds comment to database
@@ -161,5 +185,6 @@ router.get('/discussions/getDiscussions', (req, res) => {
             logger.error(`Failed to get all discussions: ${err.message}`);
             res.status(404).send('Failed to get discussions');
         })
-})
+});
+
 export default router;

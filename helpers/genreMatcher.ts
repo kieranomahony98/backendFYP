@@ -24,7 +24,7 @@ interface movieobj {
     [key: string]: string
 }
 
-function genreMatcher(genres: string[]): string {
+export async function genreMatcher(genres: string[]): Promise<string> {
     let returnGenres = '';
     for (const genre of genres) {
         returnGenres += movieGenreOBJ[genre] ? (returnGenres.length === 0) ? `${movieGenreOBJ[genre]}` : `, ${movieGenreOBJ[genre]}` : null;
@@ -37,7 +37,7 @@ export async function listMatcher(movieGenres: number[] | string[] | undefined):
         return '';
     }
     const genres: string[] = movieGenres.toString().split(",");
-    return genreMatcher(genres);
+    return await genreMatcher(genres);
 }
 
 

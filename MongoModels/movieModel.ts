@@ -27,6 +27,10 @@ const MovieSchema = new Schema({
                 with_keywords: {
                     type: String,
                     required: false
+                },
+                with_companies: {
+                    type: String,
+                    required: false
                 }
             },
             movies:

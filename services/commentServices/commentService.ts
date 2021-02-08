@@ -1,7 +1,7 @@
 import { tsCommentSchema } from '../../tsModels/commentModels';
 import CommentSchema from '../../MongoModels/conmmentModel';
 import { logger } from '../../helpers/logger';
-import { checkIfDiscussionExists, createDiscussion } from '../dbServices/discussionDbservice';
+import { checkIfDiscussionExists } from '../dbServices/discussionDbservice';
 import { movieObject } from '../../tsModels/movieGernerationModel';
 export async function updateSingleComment(_id: string, commentText: string) {
     if (!_id || !commentText) {
@@ -52,12 +52,10 @@ export async function getCommentsForPost(movie: movieObject) {
             throw err;
         });
     if (!isDiscussion) {
-        createDiscussion(movie)
-            .then((discussion) => discussion)
-            .catch((err) => {
-                logger.error(`Failed to create discussion: ${err.message}`);
-                throw err;
-            });
+        return {
+            count: 0,
+            comments: []
+        };
     }
 
     return await CommentSchema.find({ movieId: movie.movieId }).lean().exec()
