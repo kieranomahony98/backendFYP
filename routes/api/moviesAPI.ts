@@ -2,9 +2,11 @@ import express from 'express';
 import { logger } from '../../helpers/logger';
 import { returnMovies } from '../../services/movieServices/discoverMoviesService';
 import { writeToDatabase, getMoviesFromDatabase, getPlaylistsFromDatabase } from '../../services/dbServices/movieDbService';
-import { movieAuth } from '../../middleware/auth';
+import { movieAuth, auth } from '../../middleware/auth';
 import { addComment, updateSingleComment, getCommentsForPost, deleteComment, setScore } from '../../services/commentServices/commentService';
 import { checkIfDiscussionExists, createDiscussion, getAllDiscussions, getMovie } from '../../services/dbServices/discussionDbservice';
+import { createCommunityMovie, getAllCommunityMovies, deleteCommunityMovie, getUserUploadsForSingleUser } from "../../services/communityMovies/communityMoviesService";
+
 // eslint-disable-next-line new-cap
 const router = express.Router();
 
@@ -165,8 +167,13 @@ router.get('/comments/delete/:commentId', movieAuth, (req, res) => {
  * @param commentScore @type Number: Score of the comment
  * @Desc adds comment to database
  */
-router.get('/comments/increase/score/:commentId/:commentScore', movieAuth, (req, res) => {
-    setScore(req.params.commentId, parseInt(req.params.commentScore))
+router.post('/comments/set/score', movieAuth, (req, res) => {
+    const { commentId, commentScore, value, user, changeFromDownVote, changeFromUpvote } = (req.body.user) ? req.body : null;
+    if (!user) {
+        return res.status(401).send('Please log in to vote on comments');
+    }
+
+    setScore(commentId, commentScore, value, user.id, changeFromUpvote, changeFromDownVote)
         .then((comment) => {
             res.send(comment);
         })
@@ -187,4 +194,52 @@ router.get('/discussions/getDiscussions', (req, res) => {
         })
 });
 
+router.post('/indie/create', auth, (req, res) => {
+    const { movieObj, user, currentUser } = req.body;
+
+    if (!user.id) {
+        return res.status(401).send("Please log in to create a post");
+    }
+    console.log(currentUser);
+    createCommunityMovie(movieObj, currentUser)
+        .then((userMovie) => {
+            res.status(200).send(userMovie);
+        }).catch((err) => {
+            logger.error(`Failed to add user movie: ${err.message}`);
+            res.status(500).send('Failed to add user movie');
+        });
+});
+
+router.get('/indie/get', (req, res) => {
+    getAllCommunityMovies()
+        .then((movies) => {
+            console.log(movies);
+            res.send(movies);
+        }).catch((err) => {
+            logger.error(`failed to get community movies: ${err.message}`);
+            res.status(404).send('Failed to get user movies');
+        });
+});
+
+router.get('/indie/delete/:movieId', (req, res) => {
+    deleteCommunityMovie(req.params.movieId)
+        .then((deleted) => {
+            res.send(`Movie successfuly deleted: ${deleted}`);
+        }).catch((err) => {
+            logger.error(`Failed to delete user movie ${err.message}`);
+            res.status(404).send('Failed to get delete user movie');
+
+        });
+});
+
+router.get('/indie/get/:userId', (req, res) => {
+    getUserUploadsForSingleUser(req.params.userId)
+        .then((movies) => {
+            res.send(movies);
+        }).catch((err) => {
+            logger.error(`Failed to get community movies for a single user: ${err.message}`);
+            res.status(404).send('Failed to get user movies for a single user');
+
+        });
+})
 export default router;

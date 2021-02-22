@@ -8,32 +8,39 @@ const CommunityUploads = new Schema({
             required: true
         }
     },
-    userMovies: [
-        {
-            movieTitle: {
-                type: String,
-                required: true
-            },
-            MovieDescription: {
-                type: String,
-                required: true
-            },
-            moviePlaybackPath: {
-                type: String,
-                required: true
-            },
-            movieStudio: {
-                type: String,
-                required: false,
-                default: null
-            },
-            movieCredits: {
-                type: String,
-                required: false,
-                default: null
-            }
+    movieDetails: {
+        movieTitle: {
+            type: String,
+            required: true
+        },
+        movieDescription: {
+            type: String,
+            required: true
+        },
+        moviePlaybackPath: {
+            type: String,
+            required: true
+        },
+        movieReleaseYear: {
+            type: String,
+            required: true
+        },
+        movieImagePath: {
+            type: String,
+            required: true
+        },
+        movieStudio: {
+            type: String,
+            required: false,
+            default: null
+        },
+        movieCredits: {
+            type: String,
+            required: false,
+            default: null
         }
-    ]
+    }
+
 });
 
 export default mongoose.model('communityMovies', CommunityUploads);

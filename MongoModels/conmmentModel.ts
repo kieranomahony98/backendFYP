@@ -34,6 +34,14 @@ const CommentSchema = new Schema({
     isDeleted: {
         type: Boolean,
         default: false
+    },
+    commentUpVotes: {
+        type: Array,
+        default: []
+    },
+    commentDownVotes: {
+        type: Array,
+        default: []
     }
 
 });

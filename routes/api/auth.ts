@@ -104,7 +104,7 @@ router.post('/register', (req, res) => {
         }).catch((err) => {
             logger.error(`Failed to register user: ${err.message}`);
             return res.status(500).send('Sorry, that didnt go through :(');
-        })
+        });
 
 });
 

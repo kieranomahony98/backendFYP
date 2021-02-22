@@ -1,7 +1,7 @@
 import MovieSchema from '../../MongoModels/movieModel';
 import { logger } from '../../helpers/logger';
 import { movieGenerationModel, singleGenerationObject, databasePlaylistReturn } from '../../tsModels/movieGernerationModel';
-import { json } from 'body-parser';
+import TrendingSchema from '../../MongoModels/trending';
 /**
  * Check if user
  * @param {String} ID
@@ -77,8 +77,9 @@ export async function getMoviesFromDatabase(userId: string): Promise<singleGener
     return null;
 }
 
-export async function getPlaylistsFromDatabase(userId: string): Promise<databasePlaylistReturn | undefined> {
-    return getUser(userId)
+export async function getPlaylistsFromDatabase(userId: string) {
+    const trendingNow = getTrendingNowPage();
+    const userPlaylists = await getUser(userId)
         .then((user) => {
             if (user) {
                 return user.userPlaylists;
@@ -88,6 +89,20 @@ export async function getPlaylistsFromDatabase(userId: string): Promise<database
             logger.error(`Failed to get playlists from database: ${err.message}`);
             throw err;
         });
+
+    return {
+        ...userPlaylists,
+        trendingNow: await Promise.resolve(trendingNow)
+    }
+}
+
+async function getTrendingNowPage() {
+    return await TrendingSchema.find({}).lean()
+        .then((res) => res[0])
+        .catch((err) => {
+            logger.error(`failed to get trending now page: ${err.message}`);
+            throw err;
+        })
 }
 
 

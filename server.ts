@@ -24,7 +24,7 @@ app.listen(process.env.PORT, () => {
 // config mongodb
 const db = (process.env.MONGO_URI) ? process.env.MONGO_URI : '';
 // connect to db
-mongoose.connect(db, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(db, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true })
     .then(() => {
         logger.info('Mongoose successfully connected');
     }).catch((err) => {

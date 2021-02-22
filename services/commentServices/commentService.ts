@@ -77,12 +77,16 @@ export async function getCommentsForPost(movie: movieObject) {
             let comment: any;
             for (let q = 0; q < commentsForMovie.length; q++) {
                 comment = commentsForMovie[q];
+                if (comment.commentScore < -5) comment.commentText = "This comment is hidden due to low scoring";
+
                 comment['children'] = {};
                 let parentId = comment.parentId;
                 if (!parentId) {
+
                     threads[comment._id] = comment;
                     continue;
                 }
+
                 rec(comment, threads);
             }
             return {
@@ -106,8 +110,27 @@ export async function deleteComment(_id: string) {
         });
 }
 
-export async function setScore(_id: string, commentScore: Number) {
-    CommentSchema.findOneAndUpdate({ _id }, { $set: { commentScore } })
+export async function setScore(_id: string, commentScore: Number, value: number, userId: string, changedFromUpVote: boolean, changedFromDownVote: boolean) {
+
+    if (changedFromDownVote) {
+        return CommentSchema.findByIdAndUpdate({ _id }, { $set: { commentScore }, $pull: { commentDownVotes: userId } })
+            .then((completed) => completed)
+            .catch((err) => {
+                logger.error(`Failed to update score, changed from a downvote ${err.message}`);
+                throw err;
+            });
+    }
+    if (changedFromUpVote) {
+        return CommentSchema.findByIdAndUpdate({ _id }, { $set: { commentScore }, $pull: { commentUpVotes: userId } })
+            .then((completed) => completed)
+            .catch((err) => {
+                logger.error(`Failed to update score, changed from a upvote ${err.message}`);
+                throw err;
+            });
+    }
+
+    const scoreType = (value === 1) ? 'commentUpVotes' : "commentDownVotes";
+    return CommentSchema.findByIdAndUpdate({ _id }, { $set: { commentScore }, $push: { [scoreType]: userId } })
         .then((newScore) => {
             return newScore;
         })

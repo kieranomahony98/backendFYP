@@ -1,30 +1,13 @@
 import { logger } from "../../helpers/logger";
 import communityUploadsModel from "../../MongoModels/communityUploadsModel";
 
-export async function createMovie(movieObj: any) {
-
-    const userUploads = await communityUploadsModel.findOne({ 'user.userId': movieObj.user.userId })
-        .then((userUploads) => userUploads)
-        .catch((err) => {
-            logger.error(`Failed to check if user has movies in the database: ${err.message}`);
-            throw err;
-        });
-    if (userUploads) {
-        return await userUploads.updateOne({ 'user.userId': movieObj.user.userId }, { $push: { userMovies: movieObj.movie } })
-            .then((movie) => movie)
-            .catch((err) => {
-                logger.error(`Failed to push user movie: ${err.message}`);
-                throw err;
-            });
-    }
+export async function createCommunityMovie(movieDetails: any, user: any) {
     return await new communityUploadsModel({
         user: {
-            userId: movieObj.user.userId,
-            userName: movieObj.user.userName
+            userId: user.id,
+            userName: user.userName
         },
-        userMovies: [
-            movieObj.movie
-        ]
+        movieDetails
     }).save()
         .then(((userMovie) => userMovie))
         .catch((err) => {
@@ -33,12 +16,29 @@ export async function createMovie(movieObj: any) {
         });
 }
 
-export async function deleteMovie(_id: string) {
+export async function deleteCommunityMovie(_id: string) {
     return await communityUploadsModel.deleteOne({ _id })
         .then((deleted) => true)
         .catch((err) => {
             logger.error(`failed to delete movie: ${err.message}`);
             throw err;
-        })
+        });
+}
 
+export async function getUserUploadsForSingleUser(id: string) {
+    return await communityUploadsModel.find({ "user.userId": id })
+        .then((user) => user)
+        .catch((err) => {
+            logger.error(`Failed to get movies for a user: ${err.message}`);
+            throw err;
+        });
+}
+
+export async function getAllCommunityMovies() {
+    return await communityUploadsModel.find({})
+        .then((movies) => movies)
+        .catch((err) => {
+            logger.error(`failed to get community movies: ${err.message}`);
+            throw err;
+        });
 }

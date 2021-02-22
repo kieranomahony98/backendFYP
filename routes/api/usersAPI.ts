@@ -15,6 +15,7 @@ router.post('/user', auth, (req: Request, res: Response) => {
                 res.json({
                     id: user._id,
                     name: user.name,
+                    userName: user.userName,
                     email: user.email
                 });
             }
