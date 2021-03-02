@@ -27,7 +27,7 @@ const CommunityUploads = new Schema({
         },
         movieImagePath: {
             type: String,
-            required: true
+            required: false
         },
         movieGenres: {
             type: String,
