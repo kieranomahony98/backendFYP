@@ -80,9 +80,8 @@ export async function filterMovies({ movieResults, movieSearchCriteria }: discov
  */
 export async function returnMovies(movieSearchCriteria: movieSearchCriteriaModel): Promise<singleGenerationObject> {
     return (
-        // formatQuery(movieSearchCriteria)
-        // .then((query) => 
-        getMovies(movieSearchCriteria)
+        formatQuery(movieSearchCriteria)
+            .then((query) => getMovies(query))
             .then((movies) => filterMovies(movies))
             .then((filteredMovies) => filteredMovies)
             .catch((err) => {
