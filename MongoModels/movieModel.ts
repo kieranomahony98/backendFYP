@@ -42,15 +42,15 @@ const MovieSchema = new Schema({
                         },
                         movieTitle: {
                             type: String,
-                            required: true,
+                            required: false,
                         },
                         movieImagePath: {
                             type: String,
-                            required: true
+                            required: false
                         },
                         movieDescription: {
                             type: String,
-                            required: true,
+                            required: false,
                         },
                         movieReleaseYear: {
                             type: String,
@@ -58,7 +58,7 @@ const MovieSchema = new Schema({
                         },
                         movieGenres: {
                             type: String,
-                            required: true,
+                            required: false,
                         },
                         moviePopularity: {
                             type: String,
