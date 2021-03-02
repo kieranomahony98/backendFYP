@@ -1,3 +1,5 @@
+import { isValidObjectId } from "mongoose";
+import mongoose from "mongoose";
 import { logger } from "../../helpers/logger";
 import communityUploadsModel from "../../MongoModels/communityUploadsModel";
 
@@ -40,5 +42,21 @@ export async function getAllCommunityMovies() {
         .catch((err) => {
             logger.error(`failed to get community movies: ${err.message}`);
             throw err;
+        });
+}
+export async function updateUserMovie(movieDetails: any) {
+    return await communityUploadsModel.findOneAndUpdate({ _id: movieDetails._id }, { $set: { ...movieDetails } })
+        .then((updated) => updated)
+        .catch((err) => {
+            logger.error(`Failed to update movie: ${err.message}`);
+            throw err;
+        });
+}
+
+export async function getSingleCommunityMoive(movieId: string, userId: string) {
+    return await communityUploadsModel.findOne({ _id: movieId }).lean()
+        .then((movie) => {
+            if (movie && userId !== movie.user.userId) return false;
+            return movie
         });
 }

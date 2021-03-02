@@ -60,10 +60,4 @@ describe('Testing the query revision algorithim', () => {
             });
         revised.mockClear();
     });
-    // it('should return a formatted query', () => {
-    //     helperQuery.formatQuery({ primary_release_year: '2015-2019' })
-    //         .then((query) => {
-    //             expect(query).toEqual({ 'release_date.gte': '2015-01-01', 'release_date.lte': '2019-01-01' });
-    //         });
-    // });
 });

@@ -1,8 +1,8 @@
 import mongoose, { Schema } from 'mongoose';
-
+import { CommmunityMoviesModel } from '../tsModels/communityMovieModels';
 const CommunityUploads = new Schema({
     user: {
-        userId: mongoose.Types.ObjectId,
+        userId: String,
         userName: {
             type: String,
             required: true
@@ -29,6 +29,10 @@ const CommunityUploads = new Schema({
             type: String,
             required: true
         },
+        movieGenres: {
+            type: String,
+            required: false
+        },
         movieStudio: {
             type: String,
             required: false,
@@ -43,4 +47,4 @@ const CommunityUploads = new Schema({
 
 });
 
-export default mongoose.model('communityMovies', CommunityUploads);
+export default mongoose.model<CommmunityMoviesModel>('communityMovies', CommunityUploads);

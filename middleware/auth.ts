@@ -6,7 +6,6 @@ dotenv.config();
 export function auth(req: any, res: any, next: any) {
     try {
         logger.info('Verifying user authentication');
-        console.log(req.headers);
         const jwtSecret = process.env.jwtSecret ? process.env.jwtSecret : '';
 
         const token = req.headers['x-auth-token'];
@@ -17,6 +16,7 @@ export function auth(req: any, res: any, next: any) {
         logger.info(`User token valid ${decoded}`);
         //add user from payload
         req.body.user = decoded;
+        console.log(decoded);
         next();
     } catch (err) {
         logger.error(`Failed to decode user: ${err.message}`);
@@ -39,6 +39,20 @@ export function movieAuth(req: any, res: any, next: any) {
         next();
     } catch (err) {
         logger.error(`movie Auth: ${err}`);
+        next();
+    }
+}
+
+export function getAuth(req: any, res: any, next: any) {
+    try {
+        const jwtSecret = process.env.jwtSecret ? process.env.jwtSecret : '';
+        const token = (req.headers['x-auth-token']) ? req.headers['x-auth-token'] : null;
+        if (token) {
+            req.token = jwt.verify(token, jwtSecret);
+        }
+        next();
+    } catch (err) {
+        logger.error(`Failed to get auth ${err.message}`);
         next();
     }
 }

@@ -2,11 +2,11 @@ import express from 'express';
 import { logger } from '../../helpers/logger';
 import { returnMovies } from '../../services/movieServices/discoverMoviesService';
 import { writeToDatabase, getMoviesFromDatabase, getPlaylistsFromDatabase } from '../../services/dbServices/movieDbService';
-import { movieAuth, auth } from '../../middleware/auth';
+import { movieAuth, auth, getAuth } from '../../middleware/auth';
 import { addComment, updateSingleComment, getCommentsForPost, deleteComment, setScore } from '../../services/commentServices/commentService';
 import { checkIfDiscussionExists, createDiscussion, getAllDiscussions, getMovie } from '../../services/dbServices/discussionDbservice';
-import { createCommunityMovie, getAllCommunityMovies, deleteCommunityMovie, getUserUploadsForSingleUser } from "../../services/communityMovies/communityMoviesService";
-
+import { createCommunityMovie, getAllCommunityMovies, deleteCommunityMovie, getUserUploadsForSingleUser, getSingleCommunityMoive, updateUserMovie } from "../../services/communityMovies/communityMoviesService";
+import { calculateMostPopularGenres } from "../../services/dataInsightServices/dataInsightService"
 // eslint-disable-next-line new-cap
 const router = express.Router();
 
@@ -151,7 +151,10 @@ router.post('/comments/update', movieAuth, (req, res) => {
  * @param commetnId String id of post to query in db
  * @Desc deletes comment to database
  */
-router.get('/comments/delete/:commentId', movieAuth, (req, res) => {
+router.get('/comments/delete/:commentId/:userId/:commentUserId', movieAuth, (req, res) => {
+    if (req.params.userId !== req.params.commentUserId) {
+        return res.status(403).send('You do not have the authorization to delete this comment');
+    }
     deleteComment(req.params.commentId)
         .then((result) => {
             res.send(result);
@@ -161,6 +164,7 @@ router.get('/comments/delete/:commentId', movieAuth, (req, res) => {
             res.status(500).send('Failed to delete comment, try again later');
         })
 });
+
 /**
  * @Route /api/movies/comments/score/commentID/commentScore
  * @param commentId @type string: id of comment to query in db
@@ -196,11 +200,9 @@ router.get('/discussions/getDiscussions', (req, res) => {
 
 router.post('/indie/create', auth, (req, res) => {
     const { movieObj, user, currentUser } = req.body;
-
     if (!user.id) {
         return res.status(401).send("Please log in to create a post");
     }
-    console.log(currentUser);
     createCommunityMovie(movieObj, currentUser)
         .then((userMovie) => {
             res.status(200).send(userMovie);
@@ -221,14 +223,17 @@ router.get('/indie/get', (req, res) => {
         });
 });
 
-router.get('/indie/delete/:movieId', (req, res) => {
+router.get('/indie/delete/:movieId/:userId/:movieUserId', (req, res) => {
+    if (req.params.userId !== req.params.movieUserId) {
+        return res.status(403).send('You do not have authorization to delete this movie');
+    }
+
     deleteCommunityMovie(req.params.movieId)
         .then((deleted) => {
             res.send(`Movie successfuly deleted: ${deleted}`);
         }).catch((err) => {
             logger.error(`Failed to delete user movie ${err.message}`);
             res.status(404).send('Failed to get delete user movie');
-
         });
 });
 
@@ -241,5 +246,63 @@ router.get('/indie/get/:userId', (req, res) => {
             res.status(404).send('Failed to get user movies for a single user');
 
         });
+});
+
+router.post('/indie/delete', auth, (req, res) => {
+    const { user, movieDetails } = req.body;
+    if (!user || user.id !== movieDetails.userId) {
+        return res.status(403).send("You do not have the authorisation to delete this movie");
+    }
+    deleteCommunityMovie(movieDetails.movieId)
+        .then((movies) => {
+            res.send(movies);
+        }).catch((err) => {
+            logger.error(`Failed to get community movies for a single user: ${err.message}`);
+            res.status(404).send('Failed to get user movies for a single user');
+
+        });
+});
+
+router.post('/indie/user/movie/update', auth, (req, res) => {
+    const { user, movieDetails } = req.body;
+
+    if (user && movieDetails.userId !== user.id || !user) {
+        return res.status(403).send('You do not have the authorisation to prefrom this action');
+    }
+    updateUserMovie(movieDetails)
+        .then((movies) => {
+            res.send(movies);
+        }).catch((err) => {
+            logger.error(`Failed to get community movies for a single user: ${err.message}`);
+            res.status(404).send('Failed to get user movies for a single user');
+
+        });
+});
+
+router.get('/indie/user/single/movie/:movieId', getAuth, (req, res) => {
+    console.log('in get');
+    const { id } = req.token;
+
+    if (!id) return res.status(403).send('You do not have the authorisation to update this movie');
+    getSingleCommunityMoive(req.params.movieId, id)
+        .then((movie) => {
+            if (!movie) return res.status(403).send('You do not have the authorisation to update this movie');
+            res.send(movie);
+        }).catch((err) => {
+            logger.error(`Failed to get user movie :${err.message}`);
+            res.status(404).send('Unable to get user movie');
+        });
+});
+
+router.get('/testing124', (req, res) => {
+    const date = new Date();
+    const d = date.setMonth(date.getMonth() - 1);
+    // calculateMostPopularGenres(new Date(d).toISOString())
+    //     .then((movies) => {
+    //         res.send(movies);
+    //     })
+
+
 })
+
 export default router;

@@ -60,20 +60,20 @@ export async function getCommentsForPost(movie: movieObject) {
 
     return await CommentSchema.find({ movieId: movie.movieId }).lean().exec()
         .then((commentsForMovie) => {
-            let rec = (comment: any, threads: any) => {
+            let filterChildren = (comment: any, threads: any) => {
                 for (const thread in threads) {
                     const value = threads[thread];
-
                     if (thread.toString() === comment.parentId.toString()) {
                         value.children[comment._id] = comment;
                         return;
                     }
                     if (value.children) {
-                        rec(comment, value.children);
+                        filterChildren(comment, value.children);
                     }
                 }
             }
             let threads: any = {};
+
             let comment: any;
             for (let q = 0; q < commentsForMovie.length; q++) {
                 comment = commentsForMovie[q];
@@ -82,12 +82,11 @@ export async function getCommentsForPost(movie: movieObject) {
                 comment['children'] = {};
                 let parentId = comment.parentId;
                 if (!parentId) {
-
                     threads[comment._id] = comment;
                     continue;
                 }
 
-                rec(comment, threads);
+                filterChildren(comment, threads);
             }
             return {
                 count: commentsForMovie.length,

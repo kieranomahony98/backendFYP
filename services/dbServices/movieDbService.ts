@@ -105,6 +105,13 @@ async function getTrendingNowPage() {
         })
 }
 
-
+export async function getAllMovies() {
+    return await MovieSchema.find({}).lean()
+        .then((movies) => movies)
+        .catch((err) => {
+            logger.error(`Failed to get all movies :${err.message}`);
+            throw err;
+        });
+}
 
 
