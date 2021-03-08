@@ -32,7 +32,6 @@ export function movieAuth(req: any, res: any, next: any) {
             const token = req.body['x-auth-token'];
             const decoded = jwt.verify(token, jwtSecret);
             req.body.user = decoded;
-            console.log(decoded)
             logger.info(`User token valid ${decoded}`);
         }
 

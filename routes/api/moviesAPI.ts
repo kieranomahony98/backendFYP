@@ -1,7 +1,7 @@
 import express from 'express';
 import { logger } from '../../helpers/logger';
 import { returnMovies } from '../../services/movieServices/discoverMoviesService';
-import { writeToDatabase, getMoviesFromDatabase, getPlaylistsFromDatabase } from '../../services/dbServices/movieDbService';
+import { writeToDatabase, getMoviesFromDatabase, getPlaylistsFromDatabase, getSingleGeneration } from '../../services/dbServices/movieDbService';
 import { movieAuth, auth, getAuth } from '../../middleware/auth';
 import { addComment, updateSingleComment, getCommentsForPost, deleteComment, setScore } from '../../services/commentServices/commentService';
 import { checkIfDiscussionExists, createDiscussion, getAllDiscussions, getMovie } from '../../services/dbServices/discussionDbservice';
@@ -20,21 +20,34 @@ router.post('/movieGeneration', movieAuth, (req, res) => {
         .then((formattedMovies) => {
             if (id) {
                 writeToDatabase(formattedMovies, id)
-                    .then((movieWritten) => {
+                    .then((dbFormattedMovies) => {
+                        const returnObj = (req.body.MovieGenerationModel !== dbFormattedMovies?.movieSearchCriteria) ? { dbFormattedMovies, isRevised: true } : { dbFormattedMovies, isRevised: false };
+                        res.send(JSON.stringify(dbFormattedMovies));
                         logger.info(`Movie successfully wrote to DB`);
                     }).catch((err) => {
                         logger.error(`Failed to write movies to DB: ${err.message}`);
-                        throw err;
+                        const returnObj = (req.body.MovieGenerationModel !== formattedMovies.movieSearchCriteria) ? { formattedMovies, isRevised: true } : { formattedMovies, isRevised: false };
+                        return res.send(returnObj);
                     });
-            };
-            const returnObj = (req.body.MovieGenerationModel !== formattedMovies.movieSearchCriteria) ? { formattedMovies, isRevised: true } : { formattedMovies, isRevised: false };
-            res.send(JSON.stringify(returnObj));
+            } else {
+                return res.send(formattedMovies);
+            }
+
         }).catch((err) => {
             logger.error(`${err} error in api`);
             return res.status(404).send("Error getting movies");
         });
 });
 
+router.get(`/generations/single/:generationId`, (req, res) => {
+    getSingleGeneration(req.params.generationId)
+        .then((geneartion) => {
+            res.send(geneartion);
+        }).catch((err) => {
+            logger.error(`Failed to get single generation: ${err.message}`);
+            res.send(404).send(`Failed to get generation`);
+        });
+});
 /**
  * @Route /api/movies/returnMovies
  * @Desc retrieves all generations for a user
@@ -266,7 +279,7 @@ router.post('/indie/delete', auth, (req, res) => {
 router.post('/indie/user/movie/update', auth, (req, res) => {
     const { user, movieDetails } = req.body;
 
-    if (user && movieDetails.userId !== user.id || !user) {
+    if (user && movieDetails.user.userId !== user.id || !user) {
         return res.status(403).send('You do not have the authorisation to prefrom this action');
     }
     updateUserMovie(movieDetails)

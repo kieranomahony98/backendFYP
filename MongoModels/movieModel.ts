@@ -32,6 +32,7 @@ const MovieSchema = new Schema({
                     type: String,
                     required: false
                 }
+
             },
             movies:
                 [
