@@ -15,7 +15,7 @@ router.post('/login', (req, res) => {
     return UserSchema.findOne({ email })
         .then((user) => {
             if (!user) {
-                return res.status(400).send('This email does not exist');
+                return res.status(403).send('This email is not registered');
             }
             //validate hashed password 
             bcrypt.compare(password, user.password)
@@ -43,7 +43,7 @@ router.post('/login', (req, res) => {
                         });
                 });
         }).catch((err) => {
-            logger.error(err);
+            logger.error(`failed to log in user: ${err.message}`);
             throw err;
         });
 });

@@ -45,7 +45,7 @@ router.get(`/generations/single/:generationId`, (req, res) => {
             res.send(geneartion);
         }).catch((err) => {
             logger.error(`Failed to get single generation: ${err.message}`);
-            res.send(404).send(`Failed to get generation`);
+            res.send(500).send(`Failed to get generation`);
         });
 });
 /**
