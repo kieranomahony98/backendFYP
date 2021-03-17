@@ -1,6 +1,6 @@
 import MovieSchema from '../../MongoModels/movieModel';
 import { logger } from '../../helpers/logger';
-import { movieGenerationModel, singleGenerationObject, databasePlaylistReturn } from '../../tsModels/movieGernerationModel';
+import { singleGenerationObject } from '../../tsModels/movieGernerationModel';
 import TrendingSchema from '../../MongoModels/trending';
 /**
  * Check if user
@@ -33,7 +33,7 @@ export async function writeToDatabase(userMovies: singleGenerationObject, userId
         return MovieSchema.findOneAndUpdate(
             { userId },
             { $push: { userMovies } },
-            { new: true })
+            { new: true }).lean()
             .then((written) => {
                 const lastElem = written?.userMovies?.length || null;
                 if (lastElem) {

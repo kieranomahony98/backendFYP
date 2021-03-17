@@ -1,12 +1,11 @@
 import express from 'express';
 import { logger } from '../../helpers/logger';
-import { returnMovies } from '../../services/movieServices/discoverMoviesService';
+import { returnMovies, test } from '../../services/movieServices/discoverMoviesService';
 import { writeToDatabase, getMoviesFromDatabase, getPlaylistsFromDatabase, getSingleGeneration } from '../../services/dbServices/movieDbService';
 import { movieAuth, auth, getAuth } from '../../middleware/auth';
 import { addComment, updateSingleComment, getCommentsForPost, deleteComment, setScore } from '../../services/commentServices/commentService';
 import { checkIfDiscussionExists, createDiscussion, getAllDiscussions, getMovie } from '../../services/dbServices/discussionDbservice';
 import { createCommunityMovie, getAllCommunityMovies, deleteCommunityMovie, getUserUploadsForSingleUser, getSingleCommunityMoive, updateUserMovie } from "../../services/communityMovies/communityMoviesService";
-import { calculateMostPopularGenres } from "../../services/dataInsightServices/dataInsightService"
 // eslint-disable-next-line new-cap
 const router = express.Router();
 
@@ -21,8 +20,8 @@ router.post('/movieGeneration', movieAuth, (req, res) => {
             if (id) {
                 writeToDatabase(formattedMovies, id)
                     .then((dbFormattedMovies) => {
-                        const returnObj = (req.body.MovieGenerationModel !== dbFormattedMovies?.movieSearchCriteria) ? { dbFormattedMovies, isRevised: true } : { dbFormattedMovies, isRevised: false };
-                        res.send(JSON.stringify(dbFormattedMovies));
+                        const returnObj = (req.body.MovieGenerationModel !== formattedMovies.movieSearchCriteria) ? { ...dbFormattedMovies, isRevised: true } : { ...dbFormattedMovies, isRevised: false };
+                        res.send(JSON.stringify(returnObj));
                         logger.info(`Movie successfully wrote to DB`);
                     }).catch((err) => {
                         logger.error(`Failed to write movies to DB: ${err.message}`);
@@ -228,7 +227,7 @@ router.post('/indie/create', auth, (req, res) => {
 router.get('/indie/get', (req, res) => {
     getAllCommunityMovies()
         .then((movies) => {
-            console.log(movies);
+
             res.send(movies);
         }).catch((err) => {
             logger.error(`failed to get community movies: ${err.message}`);
@@ -293,7 +292,6 @@ router.post('/indie/user/movie/update', auth, (req, res) => {
 });
 
 router.get('/indie/user/single/movie/:movieId', getAuth, (req, res) => {
-    console.log('in get');
     const { id } = req.token;
 
     if (!id) return res.status(403).send('You do not have the authorisation to update this movie');
@@ -307,15 +305,6 @@ router.get('/indie/user/single/movie/:movieId', getAuth, (req, res) => {
         });
 });
 
-router.get('/testing124', (req, res) => {
-    const date = new Date();
-    const d = date.setMonth(date.getMonth() - 1);
-    // calculateMostPopularGenres(new Date(d).toISOString())
-    //     .then((movies) => {
-    //         res.send(movies);
-    //     })
 
-
-})
 
 export default router;

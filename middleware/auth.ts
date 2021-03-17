@@ -3,6 +3,8 @@ import { logger } from '../helpers/logger';
 import dotenv from 'dotenv';
 dotenv.config();
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+//https://www.youtube.com/watch?v=USaB1adUHM0&list=PLillGF-RfqbbiTGgA77tGO426V3hRF9iE&index=9&t=1795s&ab_channel=TraversyMedia 
+//this youtube video helped me understand middlewares and their usage, used in this file.
 export function auth(req: any, res: any, next: any) {
     try {
         logger.info('Verifying user authentication');
@@ -16,7 +18,7 @@ export function auth(req: any, res: any, next: any) {
         logger.info(`User token valid ${decoded}`);
         //add user from payload
         req.body.user = decoded;
-        console.log(decoded);
+
         next();
     } catch (err) {
         logger.error(`Failed to decode user: ${err.message}`);

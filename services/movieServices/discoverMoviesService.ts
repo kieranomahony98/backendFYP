@@ -2,7 +2,7 @@
 import { MovieDb } from 'moviedb-promise';
 import { logger } from '../../helpers/logger';
 import { listMatcher } from '../../helpers/genreMatcher';
-import { movieObject, movieSearchCriteriaModel, singleGenerationObject, MovieResult, discoverMovies } from '../../tsModels/movieGernerationModel';
+import { movieSearchCriteriaModel, singleGenerationObject, MovieResult, discoverMovies } from '../../tsModels/movieGernerationModel';
 import { revisedQuery, formatQuery } from '../../helpers/revisedQuery';
 import dotenv from 'dotenv'
 dotenv.config();
@@ -63,7 +63,6 @@ export async function filterMovies({ movieResults, movieSearchCriteria }: discov
             });
         }));
         return {
-            movieGenerationDate: new Date().toISOString(),
             movieSearchCriteria,
             movies
         } as singleGenerationObject;
@@ -90,3 +89,7 @@ export async function returnMovies(movieSearchCriteria: movieSearchCriteriaModel
             }));
 }
 
+export async function test() {
+    moviedb.movieInfo("2667")
+        .then((movie) => movie);
+}
