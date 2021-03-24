@@ -2,7 +2,7 @@ import express from 'express';
 import { logger } from '../../helpers/logger';
 import { returnMovies, test } from '../../services/movieServices/discoverMoviesService';
 import { writeToDatabase, getMoviesFromDatabase, getPlaylistsFromDatabase, getSingleGeneration } from '../../services/dbServices/movieDbService';
-import { movieAuth, auth, getAuth } from '../../middleware/auth';
+import { auth, getAuth } from '../../middleware/auth';
 import { addComment, updateSingleComment, getCommentsForPost, deleteComment, setScore } from '../../services/commentServices/commentService';
 import { checkIfDiscussionExists, createDiscussion, getAllDiscussions, getMovie } from '../../services/dbServices/discussionDbservice';
 import { createCommunityMovie, getAllCommunityMovies, deleteCommunityMovie, getUserUploadsForSingleUser, getSingleCommunityMoive, updateUserMovie } from "../../services/communityMovies/communityMoviesService";
@@ -13,7 +13,7 @@ const router = express.Router();
  * @Route /api/movies/movieGeneration
  * @Desc retrieve user input and filter movies
  */
-router.post('/movieGeneration', movieAuth, (req, res) => {
+router.post('/movieGeneration', auth, (req, res) => {
     const id = (req.body.user) ? req.body.user.id : null;
     returnMovies((req.body.MovieGenerationModel))
         .then((formattedMovies) => {
@@ -47,12 +47,13 @@ router.get(`/generations/single/:generationId`, (req, res) => {
             res.send(500).send(`Failed to get generation`);
         });
 });
+
 /**
  * @Route /api/movies/returnMovies
  * @Desc retrieves all generations for a user
  */
-router.post('/returnMovies', movieAuth, (req, res) => {
-    const id = (req.body.user) ? req.body.user.id : null;
+router.get('/returnMovies', getAuth, (req, res) => {
+    const { id } = req.token;
     if (!id) {
         return res.status(401).send("Please log in to access previous curations");
     }
@@ -73,8 +74,8 @@ router.post('/returnMovies', movieAuth, (req, res) => {
  * @Desc retrieves all user playlists from database
  */
 
-router.post('/getPlaylists', movieAuth, (req, res) => {
-    const id = (req.body.user) ? req.body.user.id : null;
+router.get('/getPlaylists', getAuth, (req, res) => {
+    const { id } = req.token;
     if (!id) {
         return res.status(401).send("Please log in to see your playlists");
     }
@@ -116,7 +117,7 @@ router.post('/discussions/create', (req, res) => {
  * @Route /api/movies/comments/addComments
  * @Desc adds comment to database
  */
-router.post('/comments/addComments', movieAuth, (req, res) => {
+router.post('/comments/addComments', auth, (req, res) => {
     addComment(req.body)
         .then((commentAdded) => {
             res.send(commentAdded);
@@ -147,7 +148,7 @@ router.post('/comments/getComments', (req, res) => {
  * @param postId: id of post to query in db
  * @Desc adds comment to database
  */
-router.post('/comments/update', movieAuth, (req, res) => {
+router.post('/comments/update', auth, (req, res) => {
     const { commentText, commentId } = req.body;
     updateSingleComment(commentId, commentText)
         .then((comments) => {
@@ -163,7 +164,7 @@ router.post('/comments/update', movieAuth, (req, res) => {
  * @param commetnId String id of post to query in db
  * @Desc deletes comment to database
  */
-router.get('/comments/delete/:commentId/:userId/:commentUserId', movieAuth, (req, res) => {
+router.get('/comments/delete/:commentId/:userId/:commentUserId', getAuth, (req, res) => {
     if (req.params.userId !== req.params.commentUserId) {
         return res.status(403).send('You do not have the authorization to delete this comment');
     }
@@ -183,7 +184,7 @@ router.get('/comments/delete/:commentId/:userId/:commentUserId', movieAuth, (req
  * @param commentScore @type Number: Score of the comment
  * @Desc adds comment to database
  */
-router.post('/comments/set/score', movieAuth, (req, res) => {
+router.post('/comments/set/score', auth, (req, res) => {
     const { commentId, commentScore, value, user, changeFromDownVote, changeFromUpvote } = (req.body.user) ? req.body : null;
     if (!user) {
         return res.status(401).send('Please log in to vote on comments');

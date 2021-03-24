@@ -24,7 +24,7 @@ export async function updateUser(_id: string, userDetails: any): Promise<any> {
                 return await bcrypt.hash(userDetails.password, salt)
                     .then(async (hasedPassword) => {
                         userDetails.password = hasedPassword;
-                        return await user?.update({ $set: { ...userDetails } }).lean()
+                        return await user?.update({ $set: { ...userDetails } }).lean().select("-password")
                             .then((user) => user);
 
                     });

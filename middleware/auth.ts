@@ -25,24 +25,6 @@ export function auth(req: any, res: any, next: any) {
         next();
     }
 }
-export function movieAuth(req: any, res: any, next: any) {
-    try {
-        const jwtSecret = process.env.jwtSecret ? process.env.jwtSecret : '';
-
-        logger.info('Verifying user authentication');
-        if (req.body['x-auth-token']) {
-            const token = req.body['x-auth-token'];
-            const decoded = jwt.verify(token, jwtSecret);
-            req.body.user = decoded;
-            logger.info(`User token valid ${decoded}`);
-        }
-
-        next();
-    } catch (err) {
-        logger.error(`movie Auth: ${err}`);
-        next();
-    }
-}
 
 export function getAuth(req: any, res: any, next: any) {
     try {
