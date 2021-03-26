@@ -1,18 +1,21 @@
 import express, { Request, Response } from 'express';
 import { logger } from '../../helpers/logger';
-import { auth } from '../../middleware/auth';
+import { getAuth, auth } from '../../middleware/auth';
 import UserSchema from '../../MongoModels/userModel';
+import { updateUser } from '../../services/userServices/userDbService';
 
 const router = express.Router();
-
-router.post('/user', auth, (req: Request, res: Response) => {
-    const { id } = req.body.user;
+//https://www.youtube.com/watch?v=USaB1adUHM0&list=PLillGF-RfqbbiTGgA77tGO426V3hRF9iE&index=9&t=1795s&ab_channel=TraversyMedia
+//the user route was created with help from the above link.
+router.get('/user', getAuth, (req: Request, res: Response) => {
+    console.log(req.token);
+    const { id } = req.token;
     logger.info(`user info decoded ${id}`);
     UserSchema.findById(id).select('-password')
         .then((user) => {
             logger.info(`user found: ${user}`);
             if (user) {
-                res.json({
+                res.send({
                     user: {
                         id: user._id,
                         name: user.name,
@@ -21,7 +24,6 @@ router.post('/user', auth, (req: Request, res: Response) => {
                     }
                 });
             }
-
         }).catch((err) => {
             logger.error(`Failed to validate user: ${err.message}`);
             return res.status(500).json({ msg: "failed to validate users" });
@@ -34,28 +36,25 @@ router.post('/user', auth, (req: Request, res: Response) => {
 /** @Route Post /api/users/update
  *  @Desc provides api for user to update their profile
 */
-// router.post('/update', (req, res) => {
-//     // eslint-disable-next-line max-len
-//     updateUser(req.body.email, req.body.password)
-//         .then((bool) => {
-//             if (bool) {
-//                 res.send("User successfully updated");
-//             }
-//         })
+router.post('/update', auth, (req, res) => {
+    const { id } = req.body.user ? req.body.user : null;
 
-// });
+    if (id !== req.body.userDetails._id) {
+        return res.status(401).send('You do not have the privilages to update this user');
+    }
 
-/** @Route Post /api/users/delete
- *  @Desc provides api for user to delete their profile
-*/
-// router.post('/delete', (req, res) => {
-//     deleteUser(req.body.email)
-//         .then((bool) => {
-//             if (bool) {
-//                 res.send("User successfully deleted")
-//             }
-//         })
-// });
-
+    updateUser(id, req.body.userDetails)
+        .then((user) => {
+            if (user?.message) {
+                return res.status(401).send(user.message);
+            }
+            if (user) {
+                res.send(user);
+            }
+        }).catch((err) => {
+            logger.error(`Failed to update user: ${err.message}`);
+            res.status(err.status ? err.status : 500).send(err.message ? err.message : "failed to update user");
+        });
+});
 
 export default router;

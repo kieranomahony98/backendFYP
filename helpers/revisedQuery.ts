@@ -39,7 +39,7 @@ export async function revisedQuery({ with_genres, with_keywords, sort_by, primar
 }
 
 export async function formatQuery(movieSearchCriteria: movieSearchCriteriaModel) {
-    if (movieSearchCriteria.primary_release_year) {
+    if (movieSearchCriteria?.primary_release_year) {
         const yearRange = movieSearchCriteria.primary_release_year.toString().split("-");
         movieSearchCriteria['release_date.gte'] = `${yearRange[0]}-01-01`;
         movieSearchCriteria['release_date.lte'] = `${yearRange[1]}-01-01`;

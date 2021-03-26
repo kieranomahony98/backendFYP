@@ -67,6 +67,7 @@ export interface movieObject {
 }
 
 export interface singleGenerationObject {
+    _id: String,
     movieGenerationDate: string
     movieSearchCriteria: movieSearchCriteriaModel,
     movies: movieObject[],

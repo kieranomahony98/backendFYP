@@ -7,7 +7,8 @@ import { auth } from '../../middleware/auth';
 import dotenv from 'dotenv';
 dotenv.config();
 const router = express.Router();
-
+//https://www.youtube.com/watch?v=USaB1adUHM0&list=PLillGF-RfqbbiTGgA77tGO426V3hRF9iE&index=9&t=1795s&ab_channel=TraversyMedia 
+//this video helped me in setting up the /login and /register routes
 //@route
 router.post('/login', (req, res) => {
     const { email, password } = req.body;
@@ -15,8 +16,9 @@ router.post('/login', (req, res) => {
     return UserSchema.findOne({ email })
         .then((user) => {
             if (!user) {
-                return res.status(400).send('This email does not exist');
+                return res.status(403).send('This email is not registered');
             }
+
             //validate hashed password 
             bcrypt.compare(password, user.password)
                 .then((isMatch) => {
@@ -43,7 +45,7 @@ router.post('/login', (req, res) => {
                         });
                 });
         }).catch((err) => {
-            logger.error(err);
+            logger.error(`failed to log in user: ${err.message}`);
             throw err;
         });
 });

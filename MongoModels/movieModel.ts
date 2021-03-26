@@ -8,6 +8,7 @@ const MovieSchema = new Schema({
     userMovies: [
         {
             movieGenerationDate: {
+                default: new Date().toISOString(),
                 type: String,
                 required: true,
             },
@@ -20,9 +21,13 @@ const MovieSchema = new Schema({
                     type: String,
                     required: false,
                 },
-                primary_release_year: {
+                'release_date.lte': {
                     type: String,
-                    required: false,
+                    required: false
+                },
+                'release_date.gte': {
+                    type: String,
+                    required: false
                 },
                 with_keywords: {
                     type: String,
@@ -32,6 +37,7 @@ const MovieSchema = new Schema({
                     type: String,
                     required: false
                 }
+
             },
             movies:
                 [
@@ -86,14 +92,12 @@ const MovieSchema = new Schema({
                             type: Array,
                             required: false,
                         },
-                        primary_release_year: {
-                            type: String,
-                            required: false,
-                        },
+
                         with_keywords: {
                             type: String,
                             required: false
-                        }
+                        },
+
                     },
                     movies:
                         [

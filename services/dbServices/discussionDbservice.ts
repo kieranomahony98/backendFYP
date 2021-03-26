@@ -1,7 +1,5 @@
 import { logger } from '../../helpers/logger';
 import MovieDiscussion from '../../MongoModels/discussionModel';
-import movieModel from '../../MongoModels/movieModel';
-import { discussion } from '../../tsModels/discussionInterface';
 import { movieObject } from '../../tsModels/movieGernerationModel';
 export async function checkIfDiscussionExists(movieId: Number): Promise<Boolean> {
     return await MovieDiscussion.findOne({ movieId })

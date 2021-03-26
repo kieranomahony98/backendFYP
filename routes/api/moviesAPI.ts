@@ -1,12 +1,11 @@
 import express from 'express';
 import { logger } from '../../helpers/logger';
-import { returnMovies } from '../../services/movieServices/discoverMoviesService';
-import { writeToDatabase, getMoviesFromDatabase, getPlaylistsFromDatabase } from '../../services/dbServices/movieDbService';
-import { movieAuth, auth, getAuth } from '../../middleware/auth';
+import { returnMovies, test } from '../../services/movieServices/discoverMoviesService';
+import { writeToDatabase, getMoviesFromDatabase, getPlaylistsFromDatabase, getSingleGeneration } from '../../services/dbServices/movieDbService';
+import { auth, getAuth } from '../../middleware/auth';
 import { addComment, updateSingleComment, getCommentsForPost, deleteComment, setScore } from '../../services/commentServices/commentService';
 import { checkIfDiscussionExists, createDiscussion, getAllDiscussions, getMovie } from '../../services/dbServices/discussionDbservice';
 import { createCommunityMovie, getAllCommunityMovies, deleteCommunityMovie, getUserUploadsForSingleUser, getSingleCommunityMoive, updateUserMovie } from "../../services/communityMovies/communityMoviesService";
-import { calculateMostPopularGenres } from "../../services/dataInsightServices/dataInsightService"
 // eslint-disable-next-line new-cap
 const router = express.Router();
 
@@ -14,24 +13,38 @@ const router = express.Router();
  * @Route /api/movies/movieGeneration
  * @Desc retrieve user input and filter movies
  */
-router.post('/movieGeneration', movieAuth, (req, res) => {
+router.post('/movieGeneration', auth, (req, res) => {
     const id = (req.body.user) ? req.body.user.id : null;
     returnMovies((req.body.MovieGenerationModel))
         .then((formattedMovies) => {
             if (id) {
                 writeToDatabase(formattedMovies, id)
-                    .then((movieWritten) => {
+                    .then((dbFormattedMovies) => {
+                        const returnObj = (req.body.MovieGenerationModel !== formattedMovies.movieSearchCriteria) ? { ...dbFormattedMovies, isRevised: true } : { ...dbFormattedMovies, isRevised: false };
+                        res.send(JSON.stringify(returnObj));
                         logger.info(`Movie successfully wrote to DB`);
                     }).catch((err) => {
                         logger.error(`Failed to write movies to DB: ${err.message}`);
-                        throw err;
+                        const returnObj = (req.body.MovieGenerationModel !== formattedMovies.movieSearchCriteria) ? { formattedMovies, isRevised: true } : { formattedMovies, isRevised: false };
+                        return res.send(returnObj);
                     });
-            };
-            const returnObj = (req.body.MovieGenerationModel !== formattedMovies.movieSearchCriteria) ? { formattedMovies, isRevised: true } : { formattedMovies, isRevised: false };
-            res.send(JSON.stringify(returnObj));
+            } else {
+                return res.send(formattedMovies);
+            }
+
         }).catch((err) => {
             logger.error(`${err} error in api`);
             return res.status(404).send("Error getting movies");
+        });
+});
+
+router.get(`/generations/single/:generationId`, (req, res) => {
+    getSingleGeneration(req.params.generationId)
+        .then((geneartion) => {
+            res.send(geneartion);
+        }).catch((err) => {
+            logger.error(`Failed to get single generation: ${err.message}`);
+            res.send(500).send(`Failed to get generation`);
         });
 });
 
@@ -39,8 +52,8 @@ router.post('/movieGeneration', movieAuth, (req, res) => {
  * @Route /api/movies/returnMovies
  * @Desc retrieves all generations for a user
  */
-router.post('/returnMovies', movieAuth, (req, res) => {
-    const id = (req.body.user) ? req.body.user.id : null;
+router.get('/returnMovies', getAuth, (req, res) => {
+    const { id } = req.token;
     if (!id) {
         return res.status(401).send("Please log in to access previous curations");
     }
@@ -61,8 +74,8 @@ router.post('/returnMovies', movieAuth, (req, res) => {
  * @Desc retrieves all user playlists from database
  */
 
-router.post('/getPlaylists', movieAuth, (req, res) => {
-    const id = (req.body.user) ? req.body.user.id : null;
+router.get('/getPlaylists', getAuth, (req, res) => {
+    const { id } = req.token;
     if (!id) {
         return res.status(401).send("Please log in to see your playlists");
     }
@@ -104,7 +117,7 @@ router.post('/discussions/create', (req, res) => {
  * @Route /api/movies/comments/addComments
  * @Desc adds comment to database
  */
-router.post('/comments/addComments', movieAuth, (req, res) => {
+router.post('/comments/addComments', auth, (req, res) => {
     addComment(req.body)
         .then((commentAdded) => {
             res.send(commentAdded);
@@ -135,7 +148,7 @@ router.post('/comments/getComments', (req, res) => {
  * @param postId: id of post to query in db
  * @Desc adds comment to database
  */
-router.post('/comments/update', movieAuth, (req, res) => {
+router.post('/comments/update', auth, (req, res) => {
     const { commentText, commentId } = req.body;
     updateSingleComment(commentId, commentText)
         .then((comments) => {
@@ -151,7 +164,7 @@ router.post('/comments/update', movieAuth, (req, res) => {
  * @param commetnId String id of post to query in db
  * @Desc deletes comment to database
  */
-router.get('/comments/delete/:commentId/:userId/:commentUserId', movieAuth, (req, res) => {
+router.get('/comments/delete/:commentId/:userId/:commentUserId', getAuth, (req, res) => {
     if (req.params.userId !== req.params.commentUserId) {
         return res.status(403).send('You do not have the authorization to delete this comment');
     }
@@ -171,7 +184,7 @@ router.get('/comments/delete/:commentId/:userId/:commentUserId', movieAuth, (req
  * @param commentScore @type Number: Score of the comment
  * @Desc adds comment to database
  */
-router.post('/comments/set/score', movieAuth, (req, res) => {
+router.post('/comments/set/score', auth, (req, res) => {
     const { commentId, commentScore, value, user, changeFromDownVote, changeFromUpvote } = (req.body.user) ? req.body : null;
     if (!user) {
         return res.status(401).send('Please log in to vote on comments');
@@ -215,7 +228,7 @@ router.post('/indie/create', auth, (req, res) => {
 router.get('/indie/get', (req, res) => {
     getAllCommunityMovies()
         .then((movies) => {
-            console.log(movies);
+
             res.send(movies);
         }).catch((err) => {
             logger.error(`failed to get community movies: ${err.message}`);
@@ -266,7 +279,7 @@ router.post('/indie/delete', auth, (req, res) => {
 router.post('/indie/user/movie/update', auth, (req, res) => {
     const { user, movieDetails } = req.body;
 
-    if (user && movieDetails.userId !== user.id || !user) {
+    if (user && movieDetails.user.userId !== user.id || !user) {
         return res.status(403).send('You do not have the authorisation to prefrom this action');
     }
     updateUserMovie(movieDetails)
@@ -280,7 +293,6 @@ router.post('/indie/user/movie/update', auth, (req, res) => {
 });
 
 router.get('/indie/user/single/movie/:movieId', getAuth, (req, res) => {
-    console.log('in get');
     const { id } = req.token;
 
     if (!id) return res.status(403).send('You do not have the authorisation to update this movie');
@@ -294,15 +306,6 @@ router.get('/indie/user/single/movie/:movieId', getAuth, (req, res) => {
         });
 });
 
-router.get('/testing124', (req, res) => {
-    const date = new Date();
-    const d = date.setMonth(date.getMonth() - 1);
-    // calculateMostPopularGenres(new Date(d).toISOString())
-    //     .then((movies) => {
-    //         res.send(movies);
-    //     })
 
-
-})
 
 export default router;

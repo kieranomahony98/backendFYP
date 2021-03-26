@@ -1,6 +1,6 @@
 import MovieSchema from '../../MongoModels/movieModel';
 import { logger } from '../../helpers/logger';
-import { movieGenerationModel, singleGenerationObject, databasePlaylistReturn } from '../../tsModels/movieGernerationModel';
+import { singleGenerationObject } from '../../tsModels/movieGernerationModel';
 import TrendingSchema from '../../MongoModels/trending';
 /**
  * Check if user
@@ -21,7 +21,7 @@ async function getUser(userId: string) {
  * @param {MovieObject} movieGeneration generated movies to write to databaes
  * @param {String} userId the id of the user in question
  */
-export async function writeToDatabase(userMovies: singleGenerationObject, userId: string): Promise<movieGenerationModel> {
+export async function writeToDatabase(userMovies: singleGenerationObject, userId: string): Promise<singleGenerationObject | undefined> {
     const user = await getUser(userId)
         .then((user) => user)
         .catch((err) => {
@@ -30,11 +30,15 @@ export async function writeToDatabase(userMovies: singleGenerationObject, userId
         });
 
     if (user) {
-        return MovieSchema.updateOne(
+        return MovieSchema.findOneAndUpdate(
             { userId },
-            { $push: { userMovies } })
+            { $push: { userMovies } },
+            { new: true }).lean()
             .then((written) => {
-                return written;
+                const lastElem = written?.userMovies?.length || null;
+                if (lastElem) {
+                    return written?.userMovies[lastElem - 1]
+                }
             }).catch((err) => {
                 logger.error(`Failed to update user movies: ${err.message}`);
                 throw err;
@@ -47,7 +51,13 @@ export async function writeToDatabase(userMovies: singleGenerationObject, userId
         });
         return newuserMovies.save()
             .then((res) => {
-                return res;
+                return {
+                    _id: res.userMovies[0]._id,
+                    movieGenerationDate: res.userMovies[0].movieGenerationDate,
+                    movieSearchCriteria: res.userMovies[0].movieSearchCriteria,
+                    movies: res.userMovies[0].movies
+                }
+
             }).catch((err) => {
                 logger.error(`Failed to crete user Movies ${err.message}`);
                 throw err;
@@ -114,4 +124,14 @@ export async function getAllMovies() {
         });
 }
 
+export async function getSingleGeneration(generationId: String) {
+    return await MovieSchema.find({ userMovies: { $elemMatch: { _id: generationId } } }).lean()
+        .then((generations) => {
+            return generations[0].userMovies.find((generation) => generation._id.toString() === generationId);
+        })
+        .catch((err) => {
+            logger.error(`Failed to get single generation from database :${err.message}`);
+            throw err;
+        });
+}
 

@@ -3,6 +3,7 @@ import CommentSchema from '../../MongoModels/conmmentModel';
 import { logger } from '../../helpers/logger';
 import { checkIfDiscussionExists } from '../dbServices/discussionDbservice';
 import { movieObject } from '../../tsModels/movieGernerationModel';
+// https://github.com/chennakt9/nested-commenting-system this repo helped me build this file
 export async function updateSingleComment(_id: string, commentText: string) {
     if (!_id || !commentText) {
         return false;
