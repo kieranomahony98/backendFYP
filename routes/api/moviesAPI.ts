@@ -2,7 +2,7 @@ import express from 'express';
 import { logger } from '../../helpers/logger';
 import { returnMovies, test } from '../../services/movieServices/discoverMoviesService';
 import { writeToDatabase, getMoviesFromDatabase, getPlaylistsFromDatabase, getSingleGeneration } from '../../services/dbServices/movieDbService';
-import { auth, getAuth } from '../../middleware/auth';
+import { auth, getAuth, generationAuth } from '../../middleware/auth';
 import { addComment, updateSingleComment, getCommentsForPost, deleteComment, setScore } from '../../services/commentServices/commentService';
 import { checkIfDiscussionExists, createDiscussion, getAllDiscussions, getMovie } from '../../services/dbServices/discussionDbservice';
 import { createCommunityMovie, getAllCommunityMovies, deleteCommunityMovie, getUserUploadsForSingleUser, getSingleCommunityMoive, updateUserMovie } from "../../services/communityMovies/communityMoviesService";
@@ -13,25 +13,25 @@ const router = express.Router();
  * @Route /api/movies/movieGeneration
  * @Desc retrieve user input and filter movies
  */
-router.post('/movieGeneration', auth, (req, res) => {
+router.post('/movieGeneration', generationAuth, (req, res) => {
     const id = (req.body.user) ? req.body.user.id : null;
     returnMovies((req.body.MovieGenerationModel))
         .then((formattedMovies) => {
-            if (id) {
-                writeToDatabase(formattedMovies, id)
-                    .then((dbFormattedMovies) => {
-                        const returnObj = (req.body.MovieGenerationModel !== formattedMovies.movieSearchCriteria) ? { ...dbFormattedMovies, isRevised: true } : { ...dbFormattedMovies, isRevised: false };
-                        res.send(JSON.stringify(returnObj));
-                        logger.info(`Movie successfully wrote to DB`);
-                    }).catch((err) => {
-                        logger.error(`Failed to write movies to DB: ${err.message}`);
-                        const returnObj = (req.body.MovieGenerationModel !== formattedMovies.movieSearchCriteria) ? { formattedMovies, isRevised: true } : { formattedMovies, isRevised: false };
-                        return res.send(returnObj);
-                    });
-            } else {
-                return res.send(formattedMovies);
+            if (!id) {
+                const returnObj = (req.body.MovieGenerationModel !== formattedMovies.movieSearchCriteria) ? { ...formattedMovies, isRevised: true } : { ...formattedMovies, isRevised: false };
+                res.send(returnObj);
+                return;
             }
-
+            writeToDatabase(formattedMovies, id)
+                .then((dbFormattedMovies) => {
+                    const returnObj = (req.body.MovieGenerationModel !== formattedMovies.movieSearchCriteria) ? { ...dbFormattedMovies, isRevised: true } : { ...dbFormattedMovies, isRevised: false };
+                    res.send(JSON.stringify(returnObj));
+                    logger.info(`Movie successfully wrote to DB`);
+                }).catch((err) => {
+                    logger.error(`Failed to write movies to DB: ${err.message}`);
+                    const returnObj = (req.body.MovieGenerationModel !== formattedMovies.movieSearchCriteria) ? { formattedMovies, isRevised: true } : { formattedMovies, isRevised: false };
+                    return res.send(returnObj);
+                });
         }).catch((err) => {
             logger.error(`${err} error in api`);
             return res.status(404).send("Error getting movies");
